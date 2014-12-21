@@ -28,11 +28,11 @@ public class Minute extends Component {
     }
 
     @Override
-    protected void onSizeSet(final int width, final int height) {
-        super.onSizeSet(width, height);
+    protected void onSizeSet(final int width, final int height, final boolean round) {
+        super.onSizeSet(width, height, round);
 
         textLeft = width / 2f + 8f;
-        textBottom = Constants.Text.getBaseline(height);
+        textBottom = Constants.Text.getBaseline(height, round);
     }
 
     @Override

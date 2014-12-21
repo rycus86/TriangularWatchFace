@@ -28,11 +28,11 @@ public class Date extends Component {
     }
 
     @Override
-    protected void onSizeSet(final int width, final int height) {
-        super.onSizeSet(width, height);
+    protected void onSizeSet(final int width, final int height, final boolean round) {
+        super.onSizeSet(width, height, round);
 
         textLeft = width / 2f + 8f;
-        dateBottom = Constants.Text.getBaseline(height) + TEXT_HEIGHT + 2f;
+        dateBottom = Constants.Text.getBaseline(height, round) + TEXT_HEIGHT + 2f;
         monthBottom = dateBottom + TEXT_HEIGHT + 2f;
     }
 

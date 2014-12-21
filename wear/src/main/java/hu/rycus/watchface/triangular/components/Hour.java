@@ -24,14 +24,14 @@ public class Hour extends Component {
     }
 
     @Override
-    protected void onSizeSet(final int width, final int height) {
-        super.onSizeSet(width, height);
+    protected void onSizeSet(final int width, final int height, final boolean round) {
+        super.onSizeSet(width, height, round);
 
         final Rect bounds = new Rect();
         paint.getTextBounds("23", 0, 2, bounds);
 
         textLeft = width / 2f - bounds.width();
-        textBottom = Constants.Text.getBaseline(height);
+        textBottom = Constants.Text.getBaseline(height, round);
     }
 
     @Override

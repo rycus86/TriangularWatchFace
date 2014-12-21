@@ -16,8 +16,8 @@ public class Background extends NonAmbientBackground {
     private Bitmap bitmap;
 
     @Override
-    protected void onSizeSet(final int width, final int height) {
-        super.onSizeSet(width, height);
+    protected void onSizeSet(final int width, final int height, final boolean round) {
+        super.onSizeSet(width, height, round);
 
         paint.setColor(0xFF121212);
         paint.setStyle(Paint.Style.FILL);

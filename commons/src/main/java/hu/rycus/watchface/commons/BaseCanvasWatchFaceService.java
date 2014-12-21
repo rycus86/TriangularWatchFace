@@ -12,6 +12,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
+import android.view.WindowInsets;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
 
         private final List<Component> components = new LinkedList<>();
         private final Time currentTime = new Time();
+        private final DeviceShape shape = new DeviceShape();
 
         private BroadcastReceiver batteryReceiver;
 
@@ -52,12 +54,26 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         protected abstract WatchFaceStyle buildStyle(final WatchFaceStyle.Builder builder);
 
         @Override
+        public void onApplyWindowInsets(final WindowInsets insets) {
+            super.onApplyWindowInsets(insets);
+            shape.setShape(insets.isRound());
+            notifyComponentsIfShapeIsReady();
+        }
+
+        @Override
         public void onSurfaceChanged(final SurfaceHolder holder, final int format,
                                      final int width, final int height) {
             super.onSurfaceChanged(holder, format, width, height);
 
-            for (final Component component : components) {
-                component.onSizeSet(width, height);
+            shape.setSize(width, height);
+            notifyComponentsIfShapeIsReady();
+        }
+
+        private void notifyComponentsIfShapeIsReady() {
+            if (shape.ready()) {
+                for (final Component component : components) {
+                    component.onSizeSet(shape.width, shape.height, shape.round);
+                }
             }
         }
 
@@ -172,6 +188,32 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
                     invalidate();
                 }
             };
+        }
+
+    }
+
+    private class DeviceShape {
+
+        int width;
+        int height;
+        boolean round;
+
+        boolean sizeSet = false;
+        boolean shapeSet = false;
+
+        void setSize(final int width, final int height) {
+            this.width = width;
+            this.height = height;
+            this.sizeSet = true;
+        }
+
+        void setShape(final boolean round) {
+            this.round = round;
+            this.shapeSet = true;
+        }
+
+        boolean ready() {
+            return sizeSet && shapeSet;
         }
 
     }

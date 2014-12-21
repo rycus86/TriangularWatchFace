@@ -11,6 +11,7 @@ public abstract class Component {
     protected int canvasWidth;
     protected int canvasHeight;
     protected boolean visible;
+    protected boolean isRound;
     protected boolean inAmbientMode;
     protected boolean burnInProtection;
     protected boolean lowBitAmbient;
@@ -27,9 +28,10 @@ public abstract class Component {
     protected void onSetupPaint(final Paint paint) {
     }
 
-    protected void onSizeSet(final int width, final int height) {
+    protected void onSizeSet(final int width, final int height, final boolean round) {
         this.canvasWidth = width;
         this.canvasHeight = height;
+        this.isRound = round;
     }
 
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
@@ -51,6 +53,7 @@ public abstract class Component {
         if (animation != null) {
             animation.apply(animation.getProgress());
             if (animation.isFinished()) {
+                animation.onFinished();
                 animation = null;
             }
         }

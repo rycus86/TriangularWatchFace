@@ -14,6 +14,7 @@ import hu.rycus.watchface.triangular.util.Constants;
 public class Battery extends BatteryListenerComponent {
 
     private static final int TEXT_GAP = 44;
+    private static final float ANIMATION_TRACK_LENGTH = 24f;
 
     private final Rect textBounds = new Rect();
     private final RectF iconBounds = new RectF();
@@ -25,6 +26,8 @@ public class Battery extends BatteryListenerComponent {
     private float textBottom;
     private float textRight;
     private float textLeft;
+
+    private float animationOffset;
 
     private int alpha = 0xFF;
 
@@ -38,10 +41,10 @@ public class Battery extends BatteryListenerComponent {
     }
 
     @Override
-    protected void onSizeSet(final int width, final int height) {
-        super.onSizeSet(width, height);
+    protected void onSizeSet(final int width, final int height, final boolean round) {
+        super.onSizeSet(width, height, round);
 
-        textBottom = Constants.Text.getBaseline(height) + TEXT_GAP;
+        textBottom = Constants.Text.getBaseline(height, round) + TEXT_GAP;
         textRight = width / 2f - 4f;
 
         iconBounds.bottom = textBottom;
@@ -94,6 +97,10 @@ public class Battery extends BatteryListenerComponent {
             return;
         }
 
+        if (animationOffset > 0) {
+            canvas.translate(-animationOffset, 0);
+        }
+
         paint.setStyle(Paint.Style.FILL);
 
         canvas.drawText(text, textLeft, textBottom, paint);
@@ -110,6 +117,10 @@ public class Battery extends BatteryListenerComponent {
 
         paint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(iconBorderBounds, paint);
+
+        if (animationOffset > 0) {
+            canvas.translate(animationOffset, 0);
+        }
     }
 
     private Animation createHideAnimation() {
@@ -117,6 +128,7 @@ public class Battery extends BatteryListenerComponent {
             @Override
             protected void apply(final float progress) {
                 alpha = (int) (0xFF * (1f - progress));
+                animationOffset = ANIMATION_TRACK_LENGTH * progress;
             }
         };
     }
@@ -126,6 +138,7 @@ public class Battery extends BatteryListenerComponent {
             @Override
             protected void apply(final float progress) {
                 alpha = (int) (0xFF * progress);
+                animationOffset = ANIMATION_TRACK_LENGTH * (1f - progress);
             }
         };
     }

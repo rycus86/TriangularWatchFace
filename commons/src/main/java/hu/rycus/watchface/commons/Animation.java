@@ -16,6 +16,8 @@ public abstract class Animation {
 
     protected abstract void apply(final float progress);
 
+    protected void onFinished() { }
+
     protected void onReplacing(final Animation previous) {
         duration = (long) (duration * previous.getProgress());
     }
