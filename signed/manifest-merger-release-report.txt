@@ -1,0 +1,64 @@
+-- Merging decision tree log ---
+manifest
+ADDED from AndroidManifest.xml:1:1
+	xmlns:android
+		ADDED from AndroidManifest.xml:1:11
+	package
+		ADDED from AndroidManifest.xml:2:11
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+	android:versionName
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+	android:versionCode
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+uses-permission#com.google.android.permission.PROVIDE_BACKGROUND
+ADDED from AndroidManifest.xml:4:5
+	android:name
+		ADDED from AndroidManifest.xml:5:9
+uses-permission#android.permission.WAKE_LOCK
+ADDED from AndroidManifest.xml:6:5
+	android:name
+		ADDED from AndroidManifest.xml:7:9
+application
+ADDED from AndroidManifest.xml:9:5
+MERGED from com.android.support:appcompat-v7:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.google.android.gms:play-services:6.5.87:20:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from AndroidManifest.xml:4:5
+	android:label
+		ADDED from AndroidManifest.xml:10:18
+	android:allowBackup
+		ADDED from AndroidManifest.xml:9:18
+	android:icon
+		ADDED from AndroidManifest.xml:11:18
+	android:theme
+		ADDED from AndroidManifest.xml:12:18
+meta-data#com.google.android.gms.version
+ADDED from AndroidManifest.xml:14:9
+MERGED from com.google.android.gms:play-services:6.5.87:21:9
+	android:name
+		ADDED from AndroidManifest.xml:15:13
+	android:value
+		ADDED from AndroidManifest.xml:16:13
+uses-sdk
+INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
+MERGED from com.android.support:appcompat-v7:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.google.android.gms:play-services:6.5.87:18:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from AndroidManifest.xml:3:13
+	android:targetSdkVersion
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+	android:minSdkVersion
+		INJECTED from AndroidManifest.xml:0:0
+		INJECTED from AndroidManifest.xml:0:0
+meta-data#com.google.android.wearable.beta.app
+ADDED from AndroidManifest.xml:5:9
+	android:resource
+		ADDED from AndroidManifest.xml:6:20
+	android:name
+		ADDED from AndroidManifest.xml:5:20
