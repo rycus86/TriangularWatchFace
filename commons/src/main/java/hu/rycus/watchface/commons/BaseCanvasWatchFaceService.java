@@ -17,6 +17,7 @@ import android.view.WindowInsets;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimeZone;
 
 public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService {
 
@@ -29,6 +30,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         private final Time currentTime = new Time();
         private final DeviceShape shape = new DeviceShape();
 
+        private BroadcastReceiver timezoneReceiver;
         private BroadcastReceiver batteryReceiver;
 
         protected abstract void createComponents(final Collection<Component> components);
@@ -39,6 +41,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
 
             createComponents(components);
             initializeBatteryReceiverIfNeeded();
+            initializeTimeZoneChangeReceiver();
 
             setWatchFaceStyle(buildStyle(
                     new WatchFaceStyle.Builder(BaseCanvasWatchFaceService.this)));
@@ -106,12 +109,16 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         public void onVisibilityChanged(final boolean visible) {
             super.onVisibilityChanged(visible);
 
-            if (batteryReceiver != null) {
-                if (visible) {
-                    registerBatteryReceiver();
-                } else {
-                    unregisterBatteryReceiver();
-                }
+
+            if (visible) {
+                registerBatteryReceiver();
+                registerTimeZoneChangeReceiver();
+
+                // update current time in case it changed when the receiver was unregistered
+                updateCurrentTimeWithTimeZone(TimeZone.getDefault().getID());
+            } else {
+                unregisterBatteryReceiver();
+                unregisterTimeZoneChangeReceiver();
             }
 
             for (final Component component : components) {
@@ -157,13 +164,17 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         }
 
         private void registerBatteryReceiver() {
-            final IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-            final Intent intent = registerReceiver(batteryReceiver, filter);
-            readBatteryStats(intent);
+            if (batteryReceiver != null) {
+                final IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                final Intent intent = registerReceiver(batteryReceiver, filter);
+                readBatteryStats(intent);
+            }
         }
 
         private void unregisterBatteryReceiver() {
-            unregisterReceiver(batteryReceiver);
+            if (batteryReceiver != null) {
+                unregisterReceiver(batteryReceiver);
+            }
         }
 
         private void readBatteryStats(final Intent intent) {
@@ -188,6 +199,34 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
                     invalidate();
                 }
             };
+        }
+
+        private void initializeTimeZoneChangeReceiver() {
+            timezoneReceiver = createTimeZoneChangeReceiver();
+        }
+
+        private BroadcastReceiver createTimeZoneChangeReceiver() {
+            return new BroadcastReceiver() {
+                @Override
+                public void onReceive(final Context context, final Intent intent) {
+                    updateCurrentTimeWithTimeZone(intent.getStringExtra("time-zone"));
+                    invalidate();
+                }
+            };
+        }
+
+        private void updateCurrentTimeWithTimeZone(final String timezoneId) {
+            currentTime.clear(timezoneId);
+            currentTime.setToNow();
+        }
+
+        private void registerTimeZoneChangeReceiver() {
+            final IntentFilter filter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
+            registerReceiver(timezoneReceiver, filter);
+        }
+
+        private void unregisterTimeZoneChangeReceiver() {
+            unregisterReceiver(timezoneReceiver);
         }
 
     }
