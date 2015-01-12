@@ -33,6 +33,9 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         private BroadcastReceiver timezoneReceiver;
         private BroadcastReceiver batteryReceiver;
 
+        private boolean timezoneReceiverRegistered;
+        private boolean batteryReceiverRegistered;
+
         protected abstract void createComponents(final Collection<Component> components);
 
         @Override
@@ -164,7 +167,9 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         }
 
         private void registerBatteryReceiver() {
-            if (batteryReceiver != null) {
+            if (!batteryReceiverRegistered && batteryReceiver != null) {
+                batteryReceiverRegistered = true;
+
                 final IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                 final Intent intent = registerReceiver(batteryReceiver, filter);
                 readBatteryStats(intent);
@@ -172,7 +177,9 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         }
 
         private void unregisterBatteryReceiver() {
-            if (batteryReceiver != null) {
+            if (batteryReceiverRegistered && batteryReceiver != null) {
+                batteryReceiverRegistered = false;
+
                 unregisterReceiver(batteryReceiver);
             }
         }
@@ -189,6 +196,13 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
                     }
                 }
             }
+        }
+
+        @Override
+        public void onDestroy() {
+            unregisterBatteryReceiver();
+            unregisterTimeZoneChangeReceiver();
+            super.onDestroy();
         }
 
         private BroadcastReceiver createBatteryEventReceiver() {
@@ -221,12 +235,20 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         }
 
         private void registerTimeZoneChangeReceiver() {
-            final IntentFilter filter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
-            registerReceiver(timezoneReceiver, filter);
+            if (!timezoneReceiverRegistered) {
+                timezoneReceiverRegistered = true;
+
+                final IntentFilter filter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
+                registerReceiver(timezoneReceiver, filter);
+            }
         }
 
         private void unregisterTimeZoneChangeReceiver() {
-            unregisterReceiver(timezoneReceiver);
+            if (timezoneReceiverRegistered) {
+                timezoneReceiverRegistered = false;
+
+                unregisterReceiver(timezoneReceiver);
+            }
         }
 
     }
