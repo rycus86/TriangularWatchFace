@@ -3,6 +3,7 @@ package hu.rycus.watchface.triangular.util;
 public interface Constants {
 
     public static final long ANIMATION_DURATION = 300;
+    public static final long LONG_ANIMATION_DURATION = 750;
 
     public static class Text {
 

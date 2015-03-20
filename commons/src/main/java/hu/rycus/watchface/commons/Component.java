@@ -2,7 +2,11 @@ package hu.rycus.watchface.commons;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.os.SystemClock;
 import android.text.format.Time;
+import android.util.Log;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Component {
 
@@ -16,7 +20,8 @@ public abstract class Component {
     protected boolean burnInProtection;
     protected boolean lowBitAmbient;
 
-    private Animation animation;
+    private final AtomicReference<Animation> animation = new AtomicReference<>();
+    private Thread animationThread;
 
     protected void onCreate(final boolean visible, final boolean inAmbientMode) {
         this.visible = visible;
@@ -49,26 +54,90 @@ public abstract class Component {
 
     protected void onDraw(final Canvas canvas, final Time time) { }
 
-    protected void onAnimationTick() {
+    protected void onAnimationTick(final Animation animation) {
         if (animation != null) {
             animation.apply(animation.getProgress());
             if (animation.isFinished()) {
                 animation.onFinished();
-                animation = null;
+                unsetAnimation(animation);
             }
         }
     }
 
-    protected void setAnimation(final Animation animation) {
-        if (this.animation != null) {
-            animation.onReplacing(this.animation);
-        }
+    private void unsetAnimation(final Animation animation) {
+        this.animation.compareAndSet(animation, null);
+    }
 
-        this.animation = animation;
+    private void replaceAnimation(final Animation animation) {
+        final Animation oldAnimation = this.animation.getAndSet(animation);
+        if (animation != null && oldAnimation != null) {
+            animation.onReplacing(oldAnimation);
+        }
+    }
+
+    protected void setAnimation(final Animation animation) {
+        stopAnimationThread();
+        replaceAnimation(animation);
+        startAnimationThread(animation);
+    }
+
+    private void stopAnimationThread() {
+        if (animationThread != null) {
+            animationThread.interrupt();
+            animationThread = null;
+        }
+    }
+
+    private void startAnimationThread(final Animation newAnimation) {
+        if (newAnimation != null) {
+            onAnimationTick(newAnimation);
+
+            animationThread = new Thread() {
+                final int TARGET_LOOP_TIME = 1000 / 60;
+
+                @Override
+                public void run() {
+                    long last = SystemClock.elapsedRealtime();
+
+                    try {
+                        Animation animation;
+                        do {
+                            animation = getAnimation();
+                            onAnimationTick(animation);
+
+                            if (animation != null) {
+                                final long current = SystemClock.elapsedRealtime();
+                                final long elapsed = current - last;
+                                last = current;
+
+                                delayAnimation(TARGET_LOOP_TIME - elapsed);
+                            }
+                        } while (animation != null);
+                    } finally {
+                        animationThread = null;
+                    }
+                }
+            };
+            animationThread.start();
+        }
+    }
+
+    private Animation getAnimation() {
+        return animation.get();
+    }
+
+    private void delayAnimation(final long millis) {
+        if (millis > 0L) {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ex) {
+                Log.d("Animation", "Sleep interrupted for " + getClass(), ex);
+            }
+        }
     }
 
     protected boolean shouldInvalidate() {
-        return animation != null;
+        return animation.get() != null;
     }
 
 }

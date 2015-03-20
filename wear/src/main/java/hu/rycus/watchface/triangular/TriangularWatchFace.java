@@ -8,7 +8,7 @@ import java.util.Collection;
 import hu.rycus.watchface.commons.BaseCanvasWatchFaceService;
 import hu.rycus.watchface.commons.BlackAmbientBackground;
 import hu.rycus.watchface.commons.Component;
-import hu.rycus.watchface.triangular.components.Background;
+import hu.rycus.watchface.triangular.components.AnimatedBackground;
 import hu.rycus.watchface.triangular.components.Battery;
 import hu.rycus.watchface.triangular.components.Date;
 import hu.rycus.watchface.triangular.components.Hour;
@@ -26,7 +26,7 @@ public class TriangularWatchFace extends BaseCanvasWatchFaceService {
         @Override
         protected void createComponents(final Collection<Component> components) {
             components.add(new BlackAmbientBackground());
-            components.add(new Background());
+            components.add(new AnimatedBackground());
             components.add(new Hour());
             components.add(new Minute());
             components.add(new Date());
