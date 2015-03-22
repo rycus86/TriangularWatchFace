@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,16 +25,16 @@ public class WearableConfigurationActivity extends Activity
     private GoogleApiClient apiClient;
     private DataMap configuration;
 
-    private Switch sw24hours;
-    private Switch swAnimatedBackground;
+    private CompoundButton sw24hours;
+    private CompoundButton swAnimatedBackground;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config_wear);
 
-        sw24hours = (Switch) findViewById(R.id.sw_config_24hours);
-        swAnimatedBackground = (Switch) findViewById(R.id.sw_config_anim_background);
+        sw24hours = (CompoundButton) findViewById(R.id.sw_config_24hours);
+        swAnimatedBackground = (CompoundButton) findViewById(R.id.sw_config_anim_background);
 
         apiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -55,9 +54,9 @@ public class WearableConfigurationActivity extends Activity
                 Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
 
         sw24hours.setOnCheckedChangeListener(
-                createSwitchListener(Constants.Configuration.SHOW_24_HOURS.getKey()));
+                createButtonListener(Constants.Configuration.SHOW_24_HOURS.getKey()));
         swAnimatedBackground.setOnCheckedChangeListener(
-                createSwitchListener(Constants.Configuration.ANIMATED_BACKGROUND.getKey()));
+                createButtonListener(Constants.Configuration.ANIMATED_BACKGROUND.getKey()));
     }
 
     @Override
@@ -87,10 +86,10 @@ public class WearableConfigurationActivity extends Activity
 
     @Override
     public void onConnectionFailed(final ConnectionResult connectionResult) {
-        Log.e(TAG, "GoolgeApiClient connection failed: " + connectionResult);
+        Log.d(TAG, "GoolgeApiClient connection failed: ");
     }
 
-    private CompoundButton.OnCheckedChangeListener createSwitchListener(final String key) {
+    private CompoundButton.OnCheckedChangeListener createButtonListener(final String key) {
         return new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {

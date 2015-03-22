@@ -3,28 +3,28 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="5dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_gravity="center"
         app:layout_box="all">
 
-        <Switch
+        <CheckBox
             android:id="@+id/sw_config_24hours"
+            style="@style/App.Config.Text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/config_24_hours"
-            style="@style/App.Config.Text"/>
+            android:text="@string/config_24_hours"/>
 
-        <Switch
+        <CheckBox
             android:id="@+id/sw_config_anim_background"
+            style="@style/App.Config.Text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/config_animated_background"
-            style="@style/App.Config.Text"/>
+            android:text="@string/config_animated_background"/>
 
     </LinearLayout>
 
