@@ -6,7 +6,10 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 import hu.rycus.watchface.commons.NonAmbientBackground;
+import hu.rycus.watchface.triangular.util.Constants;
 
 public class Background extends NonAmbientBackground {
 
@@ -14,6 +17,11 @@ public class Background extends NonAmbientBackground {
     private static final int N_VERTICAL = 6;
 
     private Bitmap bitmap;
+
+    @Override
+    protected boolean isActiveByDefault() {
+        return false;
+    }
 
     @Override
     protected void onSizeSet(final int width, final int height, final boolean round) {
@@ -68,6 +76,11 @@ public class Background extends NonAmbientBackground {
                 path.offset(-w / 2f, 0); // shift back
             }
         }
+    }
+
+    @Override
+    protected void onApplyConfiguration(final DataMap configuration) {
+        setActive(!Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
     }
 
     @Override

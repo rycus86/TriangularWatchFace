@@ -11,20 +11,39 @@ import android.os.Bundle;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Wearable;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
+
+import hu.rycus.watchface.commons.config.ConfigurationHelper;
 
 public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService {
 
     @Override
     public abstract BaseEngine onCreateEngine();
 
-    public abstract class BaseEngine extends Engine {
+    public abstract class BaseEngine extends Engine
+            implements
+                DataApi.DataListener,
+                GoogleApiClient.ConnectionCallbacks,
+                GoogleApiClient.OnConnectionFailedListener,
+                ConfigurationHelper.OnConfigurationDataReadCallback {
 
         private final List<Component> components = new LinkedList<>();
         private final Time currentTime = new Time();
@@ -35,6 +54,19 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
 
         private boolean timezoneReceiverRegistered;
         private boolean batteryReceiverRegistered;
+
+        private final GoogleApiClient apiClient =
+                new GoogleApiClient.Builder(BaseCanvasWatchFaceService.this)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .addApi(Wearable.API)
+                        .build();
+
+        protected String getLogTag() {
+            return "Engine";
+        }
+
+        protected abstract String[] getConfigurationPaths();
 
         protected abstract void createComponents(final Collection<Component> components);
 
@@ -112,8 +144,9 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         public void onVisibilityChanged(final boolean visible) {
             super.onVisibilityChanged(visible);
 
-
             if (visible) {
+                apiClient.connect();
+
                 registerBatteryReceiver();
                 registerTimeZoneChangeReceiver();
 
@@ -122,6 +155,11 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             } else {
                 unregisterBatteryReceiver();
                 unregisterTimeZoneChangeReceiver();
+
+                if (apiClient != null && apiClient.isConnected()) {
+                    Wearable.DataApi.removeListener(apiClient, this);
+                    apiClient.disconnect();
+                }
             }
 
             for (final Component component : components) {
@@ -142,6 +180,10 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             boolean shouldInvalidate = false;
 
             for (final Component component : components) {
+                if (!component.isActive()) {
+                    continue;
+                }
+
                 component.onAnimationTick();
                 component.onDraw(canvas, currentTime);
                 shouldInvalidate |= component.shouldInvalidate();
@@ -203,6 +245,63 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             unregisterBatteryReceiver();
             unregisterTimeZoneChangeReceiver();
             super.onDestroy();
+        }
+
+        @Override
+        public void onConnected(final Bundle bundle) {
+            Log.d(getLogTag(), "GoogleApiClient connected");
+            Wearable.DataApi.addListener(apiClient, this);
+
+            for (final String path : getConfigurationPaths()) {
+                ConfigurationHelper.loadLocalConfiguration(apiClient, path, this);
+            }
+        }
+
+        @Override
+        public void onConnectionSuspended(final int i) {
+            Log.w(getLogTag(), "GoogleApiClient connection suspended");
+        }
+
+        @Override
+        public void onConnectionFailed(final ConnectionResult connectionResult) {
+            Log.e(getLogTag(), "GoogleApiClient connection failed: " + connectionResult);
+        }
+
+        @Override
+        public void onDataChanged(final DataEventBuffer dataEvents) {
+            try {
+                for (final DataEvent dataEvent : dataEvents) {
+                    if (dataEvent.getType() != DataEvent.TYPE_CHANGED) {
+                        continue;
+                    }
+
+                    final DataItem dataItem = dataEvent.getDataItem();
+                    if (!Arrays.asList(getConfigurationPaths())
+                            .contains(dataItem.getUri().getPath())) {
+                        continue;
+                    }
+
+                    final DataMapItem dataMapItem = DataMapItem.fromDataItem(dataItem);
+                    final DataMap config = dataMapItem.getDataMap();
+                    onConfigurationReceived(config);
+                }
+            } finally {
+                dataEvents.close();
+            }
+        }
+
+        @Override
+        public void onConfigurationDataRead(final DataMap configurationMap) {
+            onConfigurationReceived(configurationMap);
+        }
+
+        private void onConfigurationReceived(final DataMap configuration) {
+            Log.d(getLogTag(), "Configuration received: " + configuration);
+            for (final Component component : components) {
+                component.onApplyConfiguration(configuration);
+            }
+
+            invalidate();
         }
 
         private BroadcastReceiver createBatteryEventReceiver() {

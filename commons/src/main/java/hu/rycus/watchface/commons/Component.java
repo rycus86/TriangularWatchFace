@@ -4,12 +4,15 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 public abstract class Component {
 
     protected final Paint paint = new Paint();
 
     protected int canvasWidth;
     protected int canvasHeight;
+    protected boolean active;
     protected boolean visible;
     protected boolean isRound;
     protected boolean inAmbientMode;
@@ -21,6 +24,7 @@ public abstract class Component {
     protected void onCreate(final boolean visible, final boolean inAmbientMode) {
         this.visible = visible;
         this.inAmbientMode = inAmbientMode;
+        this.active = isActiveByDefault();
 
         this.onSetupPaint(paint);
     }
@@ -32,6 +36,9 @@ public abstract class Component {
         this.canvasWidth = width;
         this.canvasHeight = height;
         this.isRound = round;
+    }
+
+    protected void onApplyConfiguration(final DataMap configuration) {
     }
 
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
@@ -60,7 +67,7 @@ public abstract class Component {
     }
 
     protected void setAnimation(final Animation animation) {
-        if (this.animation != null) {
+        if (animation != null && this.animation != null) {
             animation.onReplacing(this.animation);
         }
 
@@ -69,6 +76,18 @@ public abstract class Component {
 
     protected boolean shouldInvalidate() {
         return animation != null;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(final boolean active) {
+        this.active = active;
+    }
+
+    protected boolean isActiveByDefault() {
+        return true;
     }
 
 }

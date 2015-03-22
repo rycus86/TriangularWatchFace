@@ -7,6 +7,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 import hu.rycus.watchface.commons.Component;
 import hu.rycus.watchface.triangular.util.Constants;
 
@@ -14,6 +16,8 @@ public class Hour extends Component {
 
     private float textLeft;
     private float textBottom;
+
+    private boolean display24hours = true;
 
     @Override
     protected void onSetupPaint(final Paint paint) {
@@ -35,8 +39,21 @@ public class Hour extends Component {
     }
 
     @Override
+    protected void onApplyConfiguration(final DataMap configuration) {
+        super.onApplyConfiguration(configuration);
+        display24hours = Constants.Configuration.SHOW_24_HOURS.getBoolean(configuration);
+    }
+
+    @Override
     protected void onDraw(final Canvas canvas, final Time time) {
-        canvas.drawText(time.format("%H"), textLeft, textBottom, paint);
+        final String formatted;
+        if (display24hours) {
+            formatted = time.format("%H");
+        } else {
+            formatted = time.format("%I");
+        }
+
+        canvas.drawText(formatted, textLeft, textBottom, paint);
     }
 
 }

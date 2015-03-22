@@ -11,6 +11,17 @@
                  android:icon="@drawable/ic_launcher"
                  android:theme="@style/AppTheme">
 
+        <activity android:name=".config.CompanionConfigurationActivity"
+                  android:label="@string/app_name">
+
+            <intent-filter>
+                <action android:name="hu.rycus.watchface.triangular.config.CONFIG_TRIANGULAR" />
+                <category android:name="com.google.android.wearable.watchface.category.COMPANION_CONFIGURATION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

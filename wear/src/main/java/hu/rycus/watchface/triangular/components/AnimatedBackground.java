@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -56,6 +58,11 @@ public class AnimatedBackground extends NonAmbientBackground {
         cyOdd = h / 2f + h;
 
         resetState();
+    }
+
+    @Override
+    protected void onApplyConfiguration(final DataMap configuration) {
+        setActive(Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
     }
 
     @Override
@@ -112,6 +119,10 @@ public class AnimatedBackground extends NonAmbientBackground {
     @Override
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
         super.onAmbientModeChanged(inAmbientMode);
+
+        if (!active) {
+            return;
+        }
 
         if (inAmbientMode) {
             setAnimation(null);
