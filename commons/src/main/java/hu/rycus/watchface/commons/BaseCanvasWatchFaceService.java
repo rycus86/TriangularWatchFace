@@ -142,6 +142,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             boolean shouldInvalidate = false;
 
             for (final Component component : components) {
+                component.onAnimationTick();
                 component.onDraw(canvas, currentTime);
                 shouldInvalidate |= component.shouldInvalidate();
             }

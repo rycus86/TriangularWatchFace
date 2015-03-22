@@ -133,7 +133,7 @@ public class AnimatedBackground extends NonAmbientBackground {
         return new Animation(Constants.LONG_ANIMATION_DURATION) {
             @Override
             protected void apply(final float progress) {
-                float scale = 1.25f - (progress * progress * 0.25f);
+                final float scale = 1.25f - (progress * progress * 0.25f);
                 oddMatrix.setScale(scale, scale, cxOdd, cyOdd);
                 oddPath.transform(oddMatrix, oddPathTransformed);
                 oddAlpha = Math.round(0xFF * progress * progress);
