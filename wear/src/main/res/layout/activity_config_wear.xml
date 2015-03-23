@@ -5,27 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center"
-        app:layout_box="all">
+        app:layout_box="left|bottom|right">
 
-        <CheckBox
-            android:id="@+id/sw_config_24hours"
-            style="@style/App.Config.Text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/config_24_hours"/>
+        <android.support.wearable.view.WearableListView
+            android:id="@+id/list_config"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
+        </android.support.wearable.view.WearableListView>
 
-        <CheckBox
-            android:id="@+id/sw_config_anim_background"
-            style="@style/App.Config.Text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/config_animated_background"/>
-
-    </LinearLayout>
+    </FrameLayout>
 
 </android.support.wearable.view.BoxInsetLayout>

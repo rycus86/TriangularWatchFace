@@ -1,3 +1,8 @@
 <resources>
+
     <string name="app_name">Triangular Commons</string>
+
+    <string name="config_24_hours">24 hours format</string>
+    <string name="config_animated_background">Animated background</string>
+
 </resources>
