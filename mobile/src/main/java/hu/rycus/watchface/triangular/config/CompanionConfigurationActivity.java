@@ -14,6 +14,7 @@ import com.google.android.gms.wearable.Wearable;
 
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
 import hu.rycus.watchface.triangular.R;
+import hu.rycus.watchface.triangular.commons.Configuration;
 
 public class CompanionConfigurationActivity extends Activity
         implements

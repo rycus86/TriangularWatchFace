@@ -10,6 +10,7 @@ import android.text.format.Time;
 import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Hour extends Component {
@@ -41,7 +42,7 @@ public class Hour extends Component {
     @Override
     protected void onApplyConfiguration(final DataMap configuration) {
         super.onApplyConfiguration(configuration);
-        display24hours = Constants.Configuration.SHOW_24_HOURS.getBoolean(configuration);
+        display24hours = Configuration.SHOW_24_HOURS.getBoolean(configuration);
     }
 
     @Override

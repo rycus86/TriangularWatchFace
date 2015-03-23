@@ -12,7 +12,7 @@ import com.google.android.gms.wearable.Wearable;
 
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
 import hu.rycus.watchface.triangular.R;
-import hu.rycus.watchface.triangular.util.Constants;
+import hu.rycus.watchface.triangular.commons.Configuration;
 
 public class WearableConfigurationActivity extends Activity
         implements
@@ -49,14 +49,14 @@ public class WearableConfigurationActivity extends Activity
 
         Log.d(TAG, "Configuration loaded: " + configuration);
         sw24hours.setChecked(
-                Constants.Configuration.SHOW_24_HOURS.getBoolean(configuration));
+                Configuration.SHOW_24_HOURS.getBoolean(configuration));
         swAnimatedBackground.setChecked(
-                Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
+                Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
 
         sw24hours.setOnCheckedChangeListener(
-                createButtonListener(Constants.Configuration.SHOW_24_HOURS.getKey()));
+                createButtonListener(Configuration.SHOW_24_HOURS.getKey()));
         swAnimatedBackground.setOnCheckedChangeListener(
-                createButtonListener(Constants.Configuration.ANIMATED_BACKGROUND.getKey()));
+                createButtonListener(Configuration.ANIMATED_BACKGROUND.getKey()));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class WearableConfigurationActivity extends Activity
     @Override
     public void onConnected(final Bundle bundle) {
         Log.d(TAG, "GoolgeApiClient connected");
-        ConfigurationHelper.loadLocalConfiguration(apiClient, Constants.Configuration.PATH, this);
+        ConfigurationHelper.loadLocalConfiguration(apiClient, Configuration.PATH, this);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class WearableConfigurationActivity extends Activity
                 if (configuration != null) {
                     configuration.putBoolean(key, isChecked);
                     ConfigurationHelper.storeConfiguration(
-                            apiClient, Constants.Configuration.PATH, configuration);
+                            apiClient, Configuration.PATH, configuration);
                 }
             }
         };

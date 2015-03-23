@@ -13,6 +13,7 @@ import java.util.Random;
 
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.NonAmbientBackground;
+import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class AnimatedBackground extends NonAmbientBackground {
@@ -62,7 +63,7 @@ public class AnimatedBackground extends NonAmbientBackground {
 
     @Override
     protected void onApplyConfiguration(final DataMap configuration) {
-        setActive(Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
+        setActive(Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
     }
 
     @Override

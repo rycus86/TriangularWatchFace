@@ -1,4 +1,4 @@
-package hu.rycus.watchface.triangular.config;
+package hu.rycus.watchface.triangular.commons;
 
 import com.google.android.gms.wearable.DataMap;
 

@@ -8,13 +8,13 @@ import java.util.Collection;
 import hu.rycus.watchface.commons.BaseCanvasWatchFaceService;
 import hu.rycus.watchface.commons.BlackAmbientBackground;
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.components.AnimatedBackground;
 import hu.rycus.watchface.triangular.components.Background;
 import hu.rycus.watchface.triangular.components.Battery;
 import hu.rycus.watchface.triangular.components.Date;
 import hu.rycus.watchface.triangular.components.Hour;
 import hu.rycus.watchface.triangular.components.Minute;
-import hu.rycus.watchface.triangular.util.Constants;
 
 public class TriangularWatchFace extends BaseCanvasWatchFaceService {
 
@@ -27,7 +27,7 @@ public class TriangularWatchFace extends BaseCanvasWatchFaceService {
 
         @Override
         protected String[] getConfigurationPaths() {
-            return new String[] {Constants.Configuration.PATH};
+            return new String[] {Configuration.PATH};
         }
 
         @Override

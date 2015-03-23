@@ -9,7 +9,7 @@ import android.text.format.Time;
 import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.NonAmbientBackground;
-import hu.rycus.watchface.triangular.util.Constants;
+import hu.rycus.watchface.triangular.commons.Configuration;
 
 public class Background extends NonAmbientBackground {
 
@@ -80,7 +80,7 @@ public class Background extends NonAmbientBackground {
 
     @Override
     protected void onApplyConfiguration(final DataMap configuration) {
-        setActive(!Constants.Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
+        setActive(!Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
     }
 
     @Override
