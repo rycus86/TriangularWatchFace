@@ -94,6 +94,7 @@ public class ConfigurationAdapter extends BaseAdapter
             if (item.getType().equals(Configuration.Type.Binary)) {
                 button.setText(item.getString(context));
                 button.setChecked(item.getBoolean(configuration));
+                button.setEnabled(item.isAvailable(configuration));
             }
         }
 
@@ -106,6 +107,7 @@ public class ConfigurationAdapter extends BaseAdapter
                         configuration.putBoolean(item.getKey(), isChecked);
                         ConfigurationHelper.sendConfiguration(
                                 apiClient, Configuration.PATH, peerId, configuration);
+                        notifyDataSetChanged();
                     }
                 }
             };

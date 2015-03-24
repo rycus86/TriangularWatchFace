@@ -19,9 +19,12 @@ public abstract class Component {
     protected boolean burnInProtection;
     protected boolean lowBitAmbient;
 
+    private BaseCanvasWatchFaceService.BaseEngine engine;
     private Animation animation;
 
-    protected void onCreate(final boolean visible, final boolean inAmbientMode) {
+    protected void onCreate(final BaseCanvasWatchFaceService.BaseEngine engine,
+                            final boolean visible, final boolean inAmbientMode) {
+        this.engine = engine;
         this.visible = visible;
         this.inAmbientMode = inAmbientMode;
         this.active = isActiveByDefault();
@@ -74,8 +77,16 @@ public abstract class Component {
         this.animation = animation;
     }
 
-    protected boolean shouldInvalidate() {
+    protected boolean hasAnimation() {
         return animation != null;
+    }
+
+    protected boolean shouldInvalidate() {
+        return hasAnimation();
+    }
+
+    protected void requestInvalidation() {
+        engine.invalidate();
     }
 
     public boolean isActive() {

@@ -57,6 +57,8 @@ public class ConfigurationAdapter extends WearableListView.Adapter
 
         private final CompoundButton button;
 
+        private boolean listenForEvents = true;
+
         public ConfigurationViewHolder(final View itemView) {
             super(itemView);
             button = (CompoundButton) itemView.findViewById(R.id.btn_config_item);
@@ -64,9 +66,19 @@ public class ConfigurationAdapter extends WearableListView.Adapter
         }
 
         void update(final Configuration item) {
+            listenForEvents = false;
+            try {
+                onUpdate(item);
+            } finally {
+                listenForEvents = true;
+            }
+        }
+
+        void onUpdate(final Configuration item) {
             if (Configuration.Type.Binary.equals(item.getType())) {
                 button.setText(item.getString(context));
                 button.setChecked(item.getBoolean(configuration));
+                button.setEnabled(item.isAvailable(configuration));
             }
         }
 
@@ -74,12 +86,13 @@ public class ConfigurationAdapter extends WearableListView.Adapter
             return new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
-                    if (apiClient.isConnected() && configuration != null) {
+                    if (listenForEvents && apiClient.isConnected() && configuration != null) {
                         final int position = (Integer) itemView.getTag();
                         final Configuration item = Configuration.at(position);
                         configuration.putBoolean(item.getKey(), isChecked);
                         ConfigurationHelper.storeConfiguration(
                                 apiClient, Configuration.PATH, configuration);
+                        notifyDataSetChanged();
                     }
                 }
             };

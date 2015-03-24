@@ -4,6 +4,9 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
 import android.text.format.Time;
 
 import com.google.android.gms.wearable.DataMap;
@@ -21,6 +24,8 @@ public class AnimatedBackground extends NonAmbientBackground {
     private static final int N_HORIZONTAL = 6;
     private static final int N_VERTICAL = 6;
 
+    private static final int MSG_PULSE = 0x01;
+
     private final int[] colors = { 0xFF388E3C, 0xFFC2185B, 0xFF757575 };
     private final int[] opacity = new int[N_HORIZONTAL * N_VERTICAL + N_HORIZONTAL / 2];
     private final Random random = new Random();
@@ -30,7 +35,9 @@ public class AnimatedBackground extends NonAmbientBackground {
     private final Matrix oddMatrix = new Matrix();
     private float cxOdd;
     private float cyOdd;
+    private int oddPosition;
     private int oddAlpha;
+    private boolean pulse = Configuration.PULSE_ODD_TRIANGLE.getBoolean(null);
 
     private float w;
     private float h;
@@ -52,10 +59,11 @@ public class AnimatedBackground extends NonAmbientBackground {
         path.rLineTo(-w / 2f, h);
         path.close();
 
+        oddPosition = round ? 4 : 5;
         oddPath.set(path);
-        oddPath.offset(5f * w, h);
+        oddPath.offset(oddPosition * w, h);
 
-        cxOdd = w / 2f + (5f * w);
+        cxOdd = w / 2f + (oddPosition * w);
         cyOdd = h / 2f + h;
 
         resetState();
@@ -64,6 +72,9 @@ public class AnimatedBackground extends NonAmbientBackground {
     @Override
     protected void onApplyConfiguration(final DataMap configuration) {
         setActive(Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
+
+        pulse = Configuration.PULSE_ODD_TRIANGLE.getBoolean(configuration);
+        schedulePulseIfNeeded();
     }
 
     @Override
@@ -90,8 +101,9 @@ public class AnimatedBackground extends NonAmbientBackground {
             }
 
             for (int xi = 0; xi < n; xi++) {
-                if (xi == 5 && yi == 1) {
+                if (xi == oddPosition && yi == 1) {
                     // will add an odd color later
+                    colorIndex++;
                 } else {
                     final int color = colors[colorIndex++ % 3];
 
@@ -118,6 +130,12 @@ public class AnimatedBackground extends NonAmbientBackground {
     }
 
     @Override
+    protected void onVisibilityChanged(final boolean visible) {
+        super.onVisibilityChanged(visible);
+        schedulePulseIfNeeded();
+    }
+
+    @Override
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
         super.onAmbientModeChanged(inAmbientMode);
 
@@ -137,6 +155,7 @@ public class AnimatedBackground extends NonAmbientBackground {
             }
 
             setAnimation(createFadeInAnimation(startDelays));
+            schedulePulseIfNeeded();
         }
     }
 
@@ -145,9 +164,7 @@ public class AnimatedBackground extends NonAmbientBackground {
         return new Animation(Constants.LONG_ANIMATION_DURATION) {
             @Override
             protected void apply(final float progress) {
-                final float scale = 1.25f - (progress * progress * 0.25f);
-                oddMatrix.setScale(scale, scale, cxOdd, cyOdd);
-                oddPath.transform(oddMatrix, oddPathTransformed);
+                updateOddTriangleScaleForAnimationProgress(progress);
                 oddAlpha = Math.round(0xFF * progress * progress);
 
                 for (int idx = 0; idx < count; idx++) {
@@ -162,9 +179,50 @@ public class AnimatedBackground extends NonAmbientBackground {
         };
     }
 
+    private Animation createPulseAnimation() {
+        return new Animation(Constants.ANIMATION_DURATION) {
+            @Override
+            protected void apply(final float progress) {
+                if (progress < 0.5f) {
+                    updateOddTriangleScaleForAnimationProgress(1f - (progress * 2f));
+                } else {
+                    updateOddTriangleScaleForAnimationProgress((progress - 0.5f) * 2f);
+                }
+            }
+        };
+    }
+
+    private void updateOddTriangleScaleForAnimationProgress(final float progress) {
+        final float scale = 1.25f - (progress * progress * 0.25f);
+        oddMatrix.setScale(scale, scale, cxOdd, cyOdd);
+        oddPath.transform(oddMatrix, oddPathTransformed);
+    }
+
     private void resetState() {
         oddPathTransformed.set(oddPath);
         oddAlpha = 0xFF;
         Arrays.fill(opacity, 0xFF);
     }
+
+    private void schedulePulseIfNeeded() {
+        if (active && visible && !inAmbientMode && pulse) {
+            final long delay = 1000L - (SystemClock.elapsedRealtime() % 1000L);
+            handler.sendEmptyMessageDelayed(MSG_PULSE, delay);
+        }
+    }
+
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(final Message msg) {
+            if (MSG_PULSE == msg.what) {
+                if (active && visible && !inAmbientMode && pulse && !hasAnimation()) {
+                    setAnimation(createPulseAnimation());
+                    requestInvalidation();
+                }
+
+                schedulePulseIfNeeded();
+            }
+        }
+    };
+
 }

@@ -85,7 +85,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             final boolean inAmbientMode = isInAmbientMode();
 
             for (final Component component : components) {
-                component.onCreate(visible, inAmbientMode);
+                component.onCreate(this, visible, inAmbientMode);
             }
         }
 

@@ -4,5 +4,6 @@
 
     <string name="config_24_hours">24 hours format</string>
     <string name="config_animated_background">Animated background</string>
+    <string name="config_pulse">Pulse every second</string>
 
 </resources>
