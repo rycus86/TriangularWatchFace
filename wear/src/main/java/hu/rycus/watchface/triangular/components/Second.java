@@ -56,7 +56,6 @@ public class Second extends Component {
         currentAlpha = 0;
 
         updateTime();
-        setAnimation(createFadeInAnimation());
     }
 
     @Override
@@ -119,11 +118,13 @@ public class Second extends Component {
             canvas.drawText(previous, x, y, paint);
         }
 
-        final float x = textLeft + currentOffset.x;
-        final float y = textBottom + currentOffset.y;
+        if (currentAlpha > 0) {
+            final float x = textLeft + currentOffset.x;
+            final float y = textBottom + currentOffset.y;
 
-        paint.setAlpha(currentAlpha);
-        canvas.drawText(current, x, y, paint);
+            paint.setAlpha(currentAlpha);
+            canvas.drawText(current, x, y, paint);
+        }
     }
 
     @Override

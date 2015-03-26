@@ -1,6 +1,7 @@
 package hu.rycus.watchface.triangular.config;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.view.WearableListView;
 import android.util.Log;
@@ -16,9 +17,12 @@ import hu.rycus.watchface.triangular.commons.Configuration;
 public class WearableConfigurationActivity extends Activity
         implements
             GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
+            GoogleApiClient.OnConnectionFailedListener,
+            ConfigurationAdapter.OnGroupSelectedListener {
 
     private static final String TAG = "ConfigActivity";
+
+    private static final int REQ_GROUP_PICKER = 0x10;
 
     private GoogleApiClient apiClient;
 
@@ -35,10 +39,11 @@ public class WearableConfigurationActivity extends Activity
                 .addApi(Wearable.API)
                 .build();
 
-        configurationAdapter = new ConfigurationAdapter(this, apiClient);
+        configurationAdapter = new ConfigurationAdapter(this, this, apiClient);
 
         final WearableListView listView = (WearableListView) findViewById(R.id.list_config);
         listView.setAdapter(configurationAdapter);
+        listView.setClickListener(configurationAdapter);
     }
 
     @Override
@@ -72,4 +77,27 @@ public class WearableConfigurationActivity extends Activity
         Log.d(TAG, "GoolgeApiClient connection failed: ");
     }
 
+    @Override
+    public void onGroupSelected(final Configuration group, final Configuration selection) {
+        int current = group.getGroupValues().indexOf(selection);
+
+        final Intent intent = new Intent(this, GroupSelectionActivity.class);
+        intent.putExtra(GroupSelectionActivity.EXTRA_GROUP, group);
+        intent.putExtra(GroupSelectionActivity.EXTRA_SELECTED_INDEX, current);
+        startActivityForResult(intent, REQ_GROUP_PICKER);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (REQ_GROUP_PICKER == requestCode && resultCode == RESULT_OK) {
+            final Configuration group = (Configuration)
+                    data.getSerializableExtra(GroupSelectionActivity.EXTRA_GROUP);
+            final Configuration selection = (Configuration)
+                    data.getSerializableExtra(GroupSelectionActivity.EXTRA_RESULT);
+
+            if (group != null && selection != null) {
+                configurationAdapter.onGroupSelectionResult(group, selection);
+            }
+        }
+    }
 }
