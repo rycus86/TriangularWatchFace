@@ -6,8 +6,11 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Minute extends Component {
@@ -18,6 +21,8 @@ public class Minute extends Component {
 
     private float textLeft;
     private float textBottom;
+
+    private boolean secondsAreShown;
 
     @Override
     protected void onSetupPaint(final Paint paint) {
@@ -47,15 +52,28 @@ public class Minute extends Component {
     }
 
     @Override
+    protected void onApplyConfiguration(final DataMap configuration) {
+        secondsAreShown = Configuration.SHOW_SECONDS.getBoolean(configuration);
+    }
+
+    @Override
     protected void onDraw(final Canvas canvas, final Time time) {
         canvas.drawText(time.format("%M"), textLeft, textBottom, paint);
     }
 
     private Animation createGrowAnimation() {
-        return new Animation(Constants.ANIMATION_DURATION) {
+        final long factor = secondsAreShown ? 2 : 1;
+        final long duration = factor * Constants.ANIMATION_DURATION;
+
+        return new Animation(duration) {
             @Override
             protected void apply(final float progress) {
-                paint.setTextSize(MIN_SIZE + SIZE_DIFFERENCE * progress);
+                if (secondsAreShown) {
+                    final float delayedProgress = Math.max(0, (progress - 0.5f) * 2f);
+                    paint.setTextSize(MIN_SIZE + SIZE_DIFFERENCE * delayedProgress);
+                } else {
+                    paint.setTextSize(MIN_SIZE + SIZE_DIFFERENCE * progress);
+                }
             }
         };
     }

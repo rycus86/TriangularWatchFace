@@ -20,7 +20,7 @@ public class Background extends NonAmbientBackground {
 
     @Override
     protected boolean isActiveByDefault() {
-        return false;
+        return !Configuration.ANIMATED_BACKGROUND.getBoolean(null);
     }
 
     @Override

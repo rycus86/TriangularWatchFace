@@ -16,4 +16,10 @@ public enum Constants { /* No members */ ;
 
     }
 
+    public enum HandlerMessage { /* No members */;
+
+        public static final int PER_SECOND = 0x01;
+
+    }
+
 }

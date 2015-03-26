@@ -4,9 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.os.Handler;
-import android.os.Message;
-import android.os.SystemClock;
 import android.text.format.Time;
 
 import com.google.android.gms.wearable.DataMap;
@@ -23,8 +20,6 @@ public class AnimatedBackground extends NonAmbientBackground {
 
     private static final int N_HORIZONTAL = 6;
     private static final int N_VERTICAL = 6;
-
-    private static final int MSG_PULSE = 0x01;
 
     private final int[] colors = { 0xFF388E3C, 0xFFC2185B, 0xFF757575 };
     private final int[] opacity = new int[N_HORIZONTAL * N_VERTICAL + N_HORIZONTAL / 2];
@@ -45,6 +40,16 @@ public class AnimatedBackground extends NonAmbientBackground {
     public AnimatedBackground() {
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
+    }
+
+    @Override
+    protected boolean isActiveByDefault() {
+        return Configuration.ANIMATED_BACKGROUND.getBoolean(null);
+    }
+
+    @Override
+    protected boolean needsHandler() {
+        return true;
     }
 
     @Override
@@ -75,6 +80,15 @@ public class AnimatedBackground extends NonAmbientBackground {
 
         pulse = Configuration.PULSE_ODD_TRIANGLE.getBoolean(configuration);
         schedulePulseIfNeeded();
+    }
+
+    @Override
+    protected void onHandleMessage(final int what) {
+        if (Constants.HandlerMessage.PER_SECOND == what) {
+            if (active && visible && !inAmbientMode && pulse && !hasAnimation()) {
+                setAnimation(createPulseAnimation());
+            }
+        }
     }
 
     @Override
@@ -130,12 +144,6 @@ public class AnimatedBackground extends NonAmbientBackground {
     }
 
     @Override
-    protected void onVisibilityChanged(final boolean visible) {
-        super.onVisibilityChanged(visible);
-        schedulePulseIfNeeded();
-    }
-
-    @Override
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
         super.onAmbientModeChanged(inAmbientMode);
 
@@ -165,11 +173,11 @@ public class AnimatedBackground extends NonAmbientBackground {
             @Override
             protected void apply(final float progress) {
                 updateOddTriangleScaleForAnimationProgress(progress);
-                oddAlpha = Math.round(0xFF * progress * progress);
+                oddAlpha = (int) (0xFF * progress * progress);
 
                 for (int idx = 0; idx < count; idx++) {
                     float alpha = Math.min(Math.max(progress - startDelays[idx], 0f), 0.5f) * 2f;
-                    opacity[idx] = Math.round(0xFF * alpha);
+                    opacity[idx] = (int) (0xFF * alpha);
                 }
             }
             @Override
@@ -205,24 +213,9 @@ public class AnimatedBackground extends NonAmbientBackground {
     }
 
     private void schedulePulseIfNeeded() {
-        if (active && visible && !inAmbientMode && pulse) {
-            final long delay = 1000L - (SystemClock.elapsedRealtime() % 1000L);
-            handler.sendEmptyMessageDelayed(MSG_PULSE, delay);
+        if (pulse) {
+            schedule(Constants.HandlerMessage.PER_SECOND, 1000L);
         }
     }
-
-    private final Handler handler = new Handler() {
-        @Override
-        public void handleMessage(final Message msg) {
-            if (MSG_PULSE == msg.what) {
-                if (active && visible && !inAmbientMode && pulse && !hasAnimation()) {
-                    setAnimation(createPulseAnimation());
-                    requestInvalidation();
-                }
-
-                schedulePulseIfNeeded();
-            }
-        }
-    };
 
 }

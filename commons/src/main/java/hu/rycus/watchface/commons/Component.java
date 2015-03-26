@@ -22,9 +22,11 @@ public abstract class Component {
     private BaseCanvasWatchFaceService.BaseEngine engine;
     private Animation animation;
 
-    protected void onCreate(final BaseCanvasWatchFaceService.BaseEngine engine,
-                            final boolean visible, final boolean inAmbientMode) {
+    void onSetEngine(final BaseCanvasWatchFaceService.BaseEngine engine) {
         this.engine = engine;
+    }
+
+    protected void onCreate(final boolean visible, final boolean inAmbientMode) {
         this.visible = visible;
         this.inAmbientMode = inAmbientMode;
         this.active = isActiveByDefault();
@@ -63,8 +65,11 @@ public abstract class Component {
         if (animation != null) {
             animation.apply(animation.getProgress());
             if (animation.isFinished()) {
+                // copy reference in case we'll replace it in onFinished
+                final Animation animation = this.animation;
+                this.animation = null;
+
                 animation.onFinished();
-                animation = null;
             }
         }
     }
@@ -85,10 +90,6 @@ public abstract class Component {
         return hasAnimation();
     }
 
-    protected void requestInvalidation() {
-        engine.invalidate();
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -100,5 +101,15 @@ public abstract class Component {
     protected boolean isActiveByDefault() {
         return true;
     }
+
+    protected boolean needsHandler() {
+        return false;
+    }
+
+    protected void schedule(final int what, final long interval) {
+        engine.startHandlerSchedule(what, interval);
+    }
+
+    protected void onHandleMessage(final int what) { }
 
 }

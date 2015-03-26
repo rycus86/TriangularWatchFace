@@ -5,3 +5,5 @@
 .DS_Store
 /build
 /keys
+scripts/
+/.idea/inspectionProfiles

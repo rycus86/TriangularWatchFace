@@ -42,6 +42,7 @@ public class CompanionConfigurationActivity extends Activity
 
         final ListView listView = (ListView) findViewById(R.id.config_list);
         listView.setAdapter(configurationAdapter);
+        listView.setOnItemClickListener(configurationAdapter);
     }
 
     @Override
