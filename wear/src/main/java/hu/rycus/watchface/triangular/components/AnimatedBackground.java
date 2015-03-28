@@ -48,7 +48,7 @@ public class AnimatedBackground extends NonAmbientBackground {
     }
 
     @Override
-    protected boolean needsHandler() {
+    protected boolean needsScheduler() {
         return true;
     }
 
@@ -79,7 +79,7 @@ public class AnimatedBackground extends NonAmbientBackground {
         setActive(Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
 
         pulse = Configuration.PULSE_ODD_TRIANGLE.getBoolean(configuration);
-        schedulePulseIfNeeded();
+        manageScheduling();
     }
 
     @Override
@@ -163,7 +163,7 @@ public class AnimatedBackground extends NonAmbientBackground {
             }
 
             setAnimation(createFadeInAnimation(startDelays));
-            schedulePulseIfNeeded();
+            manageScheduling();
         }
     }
 
@@ -212,9 +212,11 @@ public class AnimatedBackground extends NonAmbientBackground {
         Arrays.fill(opacity, 0xFF);
     }
 
-    private void schedulePulseIfNeeded() {
+    private void manageScheduling() {
         if (pulse) {
-            schedule(Constants.HandlerMessage.PER_SECOND, 1000L);
+            schedule(Constants.HandlerMessage.PER_SECOND, Constants.HandlerMessage.INTERVAL_SECOND);
+        } else {
+            cancel(Constants.HandlerMessage.PER_SECOND);
         }
     }
 

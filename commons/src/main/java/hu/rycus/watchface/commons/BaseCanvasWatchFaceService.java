@@ -9,8 +9,6 @@ import android.graphics.Rect;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
@@ -30,12 +28,8 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
@@ -62,8 +56,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         private boolean timezoneReceiverRegistered;
         private boolean batteryReceiverRegistered;
 
-        private final Map<Integer, Long> handlerSchedules = new HashMap<>();
-        private Handler handler;
+        private final Scheduler scheduler = new Scheduler(this);
 
         private final GoogleApiClient apiClient =
                 new GoogleApiClient.Builder(BaseCanvasWatchFaceService.this)
@@ -94,16 +87,18 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
             final boolean visible = isVisible();
             final boolean inAmbientMode = isInAmbientMode();
 
-            boolean needsHandler = false;
+            boolean needsScheduler = false;
 
             for (final Component component : components) {
-                component.onSetEngine(this);
                 component.onCreate(visible, inAmbientMode);
-                needsHandler |= component.needsHandler();
+                if (component.needsScheduler()) {
+                    component.setScheduler(scheduler);
+                    needsScheduler = true;
+                }
             }
 
-            if (needsHandler) {
-                createHandler();
+            if (needsScheduler) {
+                scheduler.initialize();
             }
         }
 
@@ -169,14 +164,14 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
 
                 registerBatteryReceiver();
                 registerTimeZoneChangeReceiver();
-                rescheduleAllHandlers();
+                scheduler.enable();
 
                 // update current time in case it changed when the receiver was unregistered
                 updateCurrentTimeWithTimeZone(TimeZone.getDefault().getID());
             } else {
                 unregisterBatteryReceiver();
                 unregisterTimeZoneChangeReceiver();
-                clearAllHandlers();
+                scheduler.disable();
 
                 if (apiClient != null && apiClient.isConnected()) {
                     Wearable.DataApi.removeListener(apiClient, this);
@@ -213,87 +208,6 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
 
             if (shouldInvalidate) {
                 invalidate();
-            }
-        }
-
-        private void createHandler() {
-            this.handler = new Handler() {
-                @Override
-                public void handleMessage(final Message msg) {
-                    if (!isHandlerAllowedToRun()) {
-                        return;
-                    }
-
-                    final int what = msg.what;
-
-                    boolean hasActiveReceiver = false;
-                    boolean shouldInvalidate = false;
-
-                    try {
-                        for (final Component component : components) {
-                            if (component.isActive() && component.needsHandler()) {
-                                component.onHandleMessage(what);
-
-                                hasActiveReceiver = true;
-                                shouldInvalidate |= component.shouldInvalidate();
-                            }
-                        }
-                    } catch (Exception ex) {
-                        Log.e("BaseEngine", String.format("Failed to handle message %x", what), ex);
-                    }
-
-                    if (hasActiveReceiver) {
-                        rescheduleHandler(what);
-
-                        /*
-                         * TODO sometimes multiple registration happens
-                         * move Handler management to Scheduler helper class
-                         */
-                    }
-
-                    if (shouldInvalidate) {
-                        invalidate();
-                    }
-                }
-            };
-        }
-
-        void startHandlerSchedule(final int what, final long interval) {
-            handlerSchedules.put(what, interval);
-            rescheduleHandler(what);
-        }
-
-        void clearHandlerSchedule(final int what) {
-            handlerSchedules.remove(what);
-            if (handler != null) {
-                handler.removeMessages(what);
-            }
-        }
-
-        private boolean isHandlerAllowedToRun() {
-            return handler != null && isVisible() && !isInAmbientMode();
-        }
-
-        private void rescheduleAllHandlers() {
-            if (isHandlerAllowedToRun()) {
-                for (final int what : handlerSchedules.keySet()) {
-                    rescheduleHandler(what);
-                }
-            }
-        }
-
-        private void rescheduleHandler(final int what) {
-            if (isHandlerAllowedToRun()) {
-                final long interval = handlerSchedules.get(what);
-                final long delay = interval - (System.currentTimeMillis() % interval);
-                handler.sendEmptyMessageDelayed(what, delay);
-            }
-        }
-
-        private void clearAllHandlers() {
-            final Set<Integer> keys = new HashSet<>(handlerSchedules.keySet());
-            for (final int what : keys) {
-                clearHandlerSchedule(what);
             }
         }
 
@@ -347,7 +261,7 @@ public abstract class BaseCanvasWatchFaceService extends CanvasWatchFaceService 
         public void onDestroy() {
             unregisterBatteryReceiver();
             unregisterTimeZoneChangeReceiver();
-            clearAllHandlers();
+            scheduler.disable();
             super.onDestroy();
         }
 

@@ -20,6 +20,8 @@ public enum Constants { /* No members */ ;
 
         public static final int PER_SECOND = 0x01;
 
+        public static final long INTERVAL_SECOND = 1000L;
+
     }
 
 }

@@ -19,11 +19,11 @@ public abstract class Component {
     protected boolean burnInProtection;
     protected boolean lowBitAmbient;
 
-    private BaseCanvasWatchFaceService.BaseEngine engine;
+    private Scheduler scheduler;
     private Animation animation;
 
-    void onSetEngine(final BaseCanvasWatchFaceService.BaseEngine engine) {
-        this.engine = engine;
+    protected Object getId() {
+        return this.getClass();
     }
 
     protected void onCreate(final boolean visible, final boolean inAmbientMode) {
@@ -102,14 +102,36 @@ public abstract class Component {
         return true;
     }
 
-    protected boolean needsHandler() {
+    void setScheduler(final Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    protected boolean needsScheduler() {
         return false;
     }
 
     protected void schedule(final int what, final long interval) {
-        engine.startHandlerSchedule(what, interval);
+        scheduler.register(this, what, interval);
+    }
+
+    protected void cancel(final int what) {
+        scheduler.unregister(this, what);
     }
 
     protected void onHandleMessage(final int what) { }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o != null && o.getClass().equals(this.getClass())) {
+            return this.getId().equals(((Component) o).getId());
+        }
+
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
+    }
 
 }

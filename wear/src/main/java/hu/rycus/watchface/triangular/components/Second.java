@@ -42,7 +42,7 @@ public class Second extends Component {
     }
 
     @Override
-    protected boolean needsHandler() {
+    protected boolean needsScheduler() {
         return true;
     }
 
@@ -83,7 +83,7 @@ public class Second extends Component {
 
         if (!inAmbientMode) {
             setAnimation(createFadeInAnimation());
-            schedule(Constants.HandlerMessage.PER_SECOND, 1000L);
+            manageScheduling();
         } else if (!hasAnimation()) {
             setAnimation(createFadeOutAnimation());
         }
@@ -99,12 +99,12 @@ public class Second extends Component {
     protected void onApplyConfiguration(final DataMap configuration) {
         super.onApplyConfiguration(configuration);
         setActive(Configuration.SHOW_SECONDS.getBoolean(configuration));
+        manageScheduling();
 
         directionConfiguration = Configuration.DIR_SECONDS.getGroupSelection(configuration);
 
         if (isActive()) {
             updateTime();
-            schedule(Constants.HandlerMessage.PER_SECOND, 1000L);
         }
     }
 
@@ -146,6 +146,14 @@ public class Second extends Component {
 
         if (!current.equals(last)) {
             previous = last;
+        }
+    }
+
+    private void manageScheduling() {
+        if (isActive()) {
+            schedule(Constants.HandlerMessage.PER_SECOND, Constants.HandlerMessage.INTERVAL_SECOND);
+        } else {
+            cancel(Constants.HandlerMessage.PER_SECOND);
         }
     }
 
