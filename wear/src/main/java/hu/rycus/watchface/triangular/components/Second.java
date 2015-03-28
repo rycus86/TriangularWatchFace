@@ -50,11 +50,7 @@ public class Second extends Component {
     protected void onCreate(final boolean visible, final boolean inAmbientMode) {
         super.onCreate(visible, inAmbientMode);
 
-        current = "00";
-        previous = "00";
-        previousAlpha = 0;
-        currentAlpha = 0;
-
+        reset();
         updateTime();
     }
 
@@ -103,8 +99,10 @@ public class Second extends Component {
 
         directionConfiguration = Configuration.DIR_SECONDS.getGroupSelection(configuration);
 
-        if (isActive()) {
+        if (!inAmbientMode && isActive()) {
             updateTime();
+        } else {
+            reset();
         }
     }
 
@@ -136,6 +134,13 @@ public class Second extends Component {
                 setAnimation(createChangeAnimation());
             }
         }
+    }
+
+    private void reset() {
+        previous = current != null ? current : "00";
+        current = "00";
+        previousAlpha = 0;
+        currentAlpha = 0;
     }
 
     private void updateTime() {
