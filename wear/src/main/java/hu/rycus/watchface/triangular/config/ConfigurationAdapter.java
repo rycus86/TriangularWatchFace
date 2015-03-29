@@ -83,6 +83,10 @@ public class ConfigurationAdapter extends WearableListView.Adapter
     public void onClick(final WearableListView.ViewHolder viewHolder) {
         final int position = (Integer) viewHolder.itemView.getTag();
         final Configuration item = Configuration.at(position);
+        if (!item.isAvailable(configuration)) {
+            return;
+        }
+
         if (item.getType().equals(Configuration.Type.Group)) {
             final Configuration current = item.getGroupSelection(configuration);
             onGroupSelectedListener.onGroupSelected(item, current);
@@ -131,12 +135,15 @@ public class ConfigurationAdapter extends WearableListView.Adapter
                 txtTitle.setVisibility(View.GONE);
                 txtDescription.setVisibility(View.GONE);
             } else if (Configuration.Type.Group.equals(item.getType())) {
+                final boolean enabled = item.isAvailable(configuration);
                 final Configuration selected = item.getGroupSelection(configuration);
                 btnBinary.setVisibility(View.GONE);
                 txtTitle.setVisibility(View.VISIBLE);
                 txtTitle.setText(item.getString(context));
+                txtTitle.setEnabled(enabled);
                 txtDescription.setVisibility(View.VISIBLE);
                 txtDescription.setText(selected.getString(context));
+                txtDescription.setEnabled(enabled);
             }
         }
 

@@ -80,6 +80,10 @@ public class ConfigurationAdapter extends BaseAdapter
     public void onItemClick(final AdapterView<?> parent, final View view,
                             final int position, final long id) {
         final Configuration item = Configuration.at(position);
+        if (!item.isAvailable(configuration)) {
+            return;
+        }
+
         if (item.getType().equals(Configuration.Type.Group)) {
             final List<Configuration> values = item.getGroupValues();
 

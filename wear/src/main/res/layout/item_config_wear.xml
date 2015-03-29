@@ -28,7 +28,6 @@
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:visibility="gone"
-        android:layout_below="@id/txt_config_title"
-        style="@style/TextAppearance.Wearable.Small"/>
+        android:layout_below="@id/txt_config_title"/>
 
 </RelativeLayout>
