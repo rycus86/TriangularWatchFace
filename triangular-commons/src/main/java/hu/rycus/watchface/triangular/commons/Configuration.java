@@ -1,6 +1,7 @@
 package hu.rycus.watchface.triangular.commons;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.android.gms.wearable.DataMap;
 
@@ -51,6 +52,11 @@ public enum Configuration {
             .defaultValue(false)
             .stringResource(R.string.config_dir_seconds_all)),
 
+    COLOR_PALETTE(palette()
+            .key("palette")
+            .defaultValue(Palette.ORIGINAL)
+            .stringResource(R.string.config_color_palette)),
+
     ANIMATED_BACKGROUND(binary()
             .key("animbg")
             .defaultValue(true)
@@ -63,16 +69,17 @@ public enum Configuration {
             .dependencies(ANIMATED_BACKGROUND));
 
     public enum Type {
-        Binary, Group, Choice
+        Binary, Group, Choice, Palette
     }
 
     public static final String PATH = "/triangular";
 
     private static final Configuration[] SELECTABLE;
     static {
+        final List<Type> selectableList = Arrays.asList(Type.Binary, Type.Group, Type.Palette);
         final List<Configuration> items = new LinkedList<>();
         for (final Configuration configuration : Configuration.values()) {
-            if (Arrays.asList(Type.Binary, Type.Group).contains(configuration.getType())) {
+            if (selectableList.contains(configuration.getType())) {
                 items.add(configuration);
             }
         }
@@ -105,18 +112,6 @@ public enum Configuration {
 
     public String getKey() {
         return key;
-    }
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-
-    public Object getValue(final DataMap configuration) {
-        if (type.equals(Type.Binary)) {
-            return getBoolean(configuration);
-        } else {
-            return defaultValue;
-        }
     }
 
     public boolean getBoolean(final DataMap configuration) {
@@ -156,6 +151,20 @@ public enum Configuration {
         }
     }
 
+    public Palette getPalette(final DataMap configuration) {
+        final Palette defaultValue = (Palette) this.defaultValue;
+        if (configuration != null) {
+            final String selected = configuration.getString(key, defaultValue.name());
+            try {
+                return Palette.valueOf(selected);
+            } catch (IllegalArgumentException ex) {
+                Log.w("Configuration", "Illegal palette name: " + selected);
+            }
+        }
+
+        return defaultValue;
+    }
+
     public String getString(final Context context) {
         return context.getString(stringResource);
     }
@@ -192,6 +201,10 @@ public enum Configuration {
 
     private static ConfigurationBuilder<Boolean> choice(final Configuration group) {
         return new ConfigurationBuilder<Boolean>(Type.Choice).dependencies(group);
+    }
+
+    private static ConfigurationBuilder<Palette> palette() {
+        return new ConfigurationBuilder<>(Type.Palette);
     }
 
     private static class ConfigurationBuilder<T> {

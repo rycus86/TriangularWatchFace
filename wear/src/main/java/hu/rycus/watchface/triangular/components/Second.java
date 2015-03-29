@@ -12,6 +12,7 @@ import com.google.android.gms.wearable.DataMap;
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.Component;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Second extends Component {
@@ -19,6 +20,8 @@ public class Second extends Component {
     private static final int TEXT_HEIGHT = 32;
 
     private final Time ownTime = new Time();
+
+    private Palette palette = Palette.getDefault();
 
     private float textLeft;
     private float textBottom;
@@ -49,6 +52,7 @@ public class Second extends Component {
     @Override
     protected void onCreate(final boolean visible, final boolean inAmbientMode) {
         super.onCreate(visible, inAmbientMode);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
 
         reset();
         updateTime();
@@ -77,6 +81,8 @@ public class Second extends Component {
         super.onAmbientModeChanged(inAmbientMode);
         updateTime();
 
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
+
         if (!inAmbientMode) {
             setAnimation(createFadeInAnimation());
             manageScheduling();
@@ -96,6 +102,9 @@ public class Second extends Component {
         super.onApplyConfiguration(configuration);
         setActive(Configuration.SHOW_SECONDS.getBoolean(configuration));
         manageScheduling();
+
+        palette = Configuration.COLOR_PALETTE.getPalette(configuration);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
 
         directionConfiguration = Configuration.DIR_SECONDS.getGroupSelection(configuration);
 

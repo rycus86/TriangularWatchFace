@@ -20,7 +20,7 @@ public class BlackAmbientBackground extends Component {
     }
 
     protected void onDrawBackground(final Canvas canvas, final Time time) {
-        canvas.drawRect(0, 0, canvasWidth, canvasHeight, paint);
+        canvas.drawPaint(paint);
     }
 
 }

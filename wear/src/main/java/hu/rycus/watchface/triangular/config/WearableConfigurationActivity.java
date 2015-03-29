@@ -13,16 +13,19 @@ import com.google.android.gms.wearable.Wearable;
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
 import hu.rycus.watchface.triangular.R;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
 
 public class WearableConfigurationActivity extends Activity
         implements
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener,
-            ConfigurationAdapter.OnGroupSelectedListener {
+            ConfigurationAdapter.OnGroupSelectedListener,
+            ConfigurationAdapter.OnPaletteParentSelectedListener {
 
     private static final String TAG = "ConfigActivity";
 
     private static final int REQ_GROUP_PICKER = 0x10;
+    private static final int REQ_PALETTE_PICKER = 0x11;
 
     private GoogleApiClient apiClient;
 
@@ -39,7 +42,7 @@ public class WearableConfigurationActivity extends Activity
                 .addApi(Wearable.API)
                 .build();
 
-        configurationAdapter = new ConfigurationAdapter(this, this, apiClient);
+        configurationAdapter = new ConfigurationAdapter(this, this, this, apiClient);
 
         final WearableListView listView = (WearableListView) findViewById(R.id.list_config);
         listView.setAdapter(configurationAdapter);
@@ -79,12 +82,22 @@ public class WearableConfigurationActivity extends Activity
 
     @Override
     public void onGroupSelected(final Configuration group, final Configuration selection) {
-        int current = group.getGroupValues().indexOf(selection);
+        final int current = group.getGroupValues().indexOf(selection);
 
         final Intent intent = new Intent(this, GroupSelectionActivity.class);
         intent.putExtra(GroupSelectionActivity.EXTRA_GROUP, group);
         intent.putExtra(GroupSelectionActivity.EXTRA_SELECTED_INDEX, current);
         startActivityForResult(intent, REQ_GROUP_PICKER);
+    }
+
+    @Override
+    public void onPaletteParentSelected(final Configuration item, final Palette selection) {
+        final int current = Palette.indexOf(selection);
+
+        final Intent intent = new Intent(this, PaletteSelectionActivity.class);
+        intent.putExtra(PaletteSelectionActivity.EXTRA_ITEM, item);
+        intent.putExtra(PaletteSelectionActivity.EXTRA_SELECTED_INDEX, current);
+        startActivityForResult(intent, REQ_PALETTE_PICKER);
     }
 
     @Override
@@ -97,6 +110,16 @@ public class WearableConfigurationActivity extends Activity
 
             if (group != null && selection != null) {
                 configurationAdapter.onGroupSelectionResult(group, selection);
+            }
+        } else if (REQ_PALETTE_PICKER == requestCode && resultCode == RESULT_OK) {
+            final Configuration item = (Configuration)
+                    data.getSerializableExtra(PaletteSelectionActivity.EXTRA_ITEM);
+            final Palette selection = (Palette)
+                    data.getSerializableExtra(PaletteSelectionActivity.EXTRA_RESULT);
+            System.out.println("Palette: " + item + " -> " + selection);
+
+            if (item != null && selection != null) {
+                configurationAdapter.onPaletteSelectionResult(item, selection);
             }
         }
     }

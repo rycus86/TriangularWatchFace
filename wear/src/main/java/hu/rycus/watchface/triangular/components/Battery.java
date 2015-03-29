@@ -7,8 +7,12 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.text.format.Time;
 
+import com.google.android.gms.wearable.DataMap;
+
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.BatteryListenerComponent;
+import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Battery extends BatteryListenerComponent {
@@ -27,6 +31,8 @@ public class Battery extends BatteryListenerComponent {
     private float textRight;
     private float textLeft;
 
+    private Palette palette = Palette.getDefault();
+
     private float animationOffset;
 
     private int alpha = 0xFF;
@@ -34,8 +40,13 @@ public class Battery extends BatteryListenerComponent {
     private String text;
 
     @Override
+    protected void onCreate(final boolean visible, final boolean inAmbientMode) {
+        super.onCreate(visible, inAmbientMode);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
+    }
+
+    @Override
     protected void onSetupPaint(final Paint paint) {
-        paint.setColor(Color.WHITE);
         paint.setAntiAlias(true);
         paint.setTextSize(18f);
     }
@@ -57,11 +68,21 @@ public class Battery extends BatteryListenerComponent {
     protected void onAmbientModeChanged(final boolean inAmbientMode) {
         super.onAmbientModeChanged(inAmbientMode);
 
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
+
         if (inAmbientMode) {
             setAnimation(createHideAnimation());
         } else {
             setAnimation(createShowAnimation());
         }
+    }
+
+    @Override
+    protected void onApplyConfiguration(final DataMap configuration) {
+        super.onApplyConfiguration(configuration);
+
+        palette = Configuration.COLOR_PALETTE.getPalette(configuration);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
     }
 
     @Override
@@ -102,14 +123,19 @@ public class Battery extends BatteryListenerComponent {
         }
 
         paint.setStyle(Paint.Style.FILL);
+        paint.setColor(palette.text());
+        paint.setAlpha(alpha);
 
         canvas.drawText(text, textLeft, textBottom, paint);
 
         if (!(inAmbientMode && lowBitAmbient)) {
-            paint.setARGB(alpha, 0x21, 0x21, 0x21);
+            paint.setColor(palette.background());
+            paint.setAlpha(alpha);
+
             canvas.drawRect(iconBodyBounds, paint);
 
-            paint.setARGB(alpha, 0xFF, 0xFF, 0xFF);
+            paint.setColor(palette.text());
+            paint.setAlpha(alpha);
         }
 
         canvas.drawRect(iconTopBounds, paint);

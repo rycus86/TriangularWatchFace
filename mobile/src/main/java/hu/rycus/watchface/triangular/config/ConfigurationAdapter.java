@@ -18,6 +18,8 @@ import java.util.List;
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
 import hu.rycus.watchface.triangular.R;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
+import hu.rycus.watchface.triangular.commons.PaletteView;
 
 public class ConfigurationAdapter extends BaseAdapter
         implements
@@ -92,7 +94,6 @@ public class ConfigurationAdapter extends BaseAdapter
                 public void onClick(final DialogInterface dialog, final int which) {
                     final Configuration selection = values.get(which);
                     if (peerId != null && configuration != null) {
-                        final Configuration item = Configuration.at(position);
                         configuration.putString(item.getKey(), selection.getKey());
                         ConfigurationHelper.sendConfiguration(
                                 apiClient, Configuration.PATH, peerId, configuration);
@@ -110,6 +111,24 @@ public class ConfigurationAdapter extends BaseAdapter
                     .setItems(items, clickListener)
                     .setTitle(item.getString(context))
                     .show();
+        } else if (item.getType().equals(Configuration.Type.Palette)) {
+            final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(final DialogInterface dialog, final int which) {
+                    final Palette selection = Palette.at(which);
+                    if (peerId != null && configuration != null) {
+                        configuration.putString(item.getKey(), selection.name());
+                        ConfigurationHelper.sendConfiguration(
+                                apiClient, Configuration.PATH, peerId, configuration);
+                        notifyDataSetChanged();
+                    }
+                }
+            };
+
+            new AlertDialog.Builder(context)
+                    .setAdapter(Palette.getAdapter(), clickListener)
+                    .setTitle(item.getString(context))
+                    .show();
         }
     }
 
@@ -118,6 +137,7 @@ public class ConfigurationAdapter extends BaseAdapter
         private final CompoundButton btnBinary;
         private final TextView txtTitle;
         private final TextView txtDescription;
+        private final PaletteView vPalette;
 
         private int position;
         private boolean listenForEvents = true;
@@ -127,6 +147,7 @@ public class ConfigurationAdapter extends BaseAdapter
             this.btnBinary.setOnCheckedChangeListener(createButtonListener());
             this.txtTitle = find(itemView, R.id.txt_config_title);
             this.txtDescription = find(itemView, R.id.txt_config_description);
+            this.vPalette = find(itemView, R.id.v_config_palette);
         }
 
         @SuppressWarnings("unchecked")
@@ -153,6 +174,7 @@ public class ConfigurationAdapter extends BaseAdapter
                 btnBinary.setEnabled(item.isAvailable(configuration));
                 txtTitle.setVisibility(View.GONE);
                 txtDescription.setVisibility(View.GONE);
+                vPalette.setVisibility(View.GONE);
             } else if (item.getType().equals(Configuration.Type.Group)) {
                 final Configuration selected = item.getGroupSelection(configuration);
                 btnBinary.setVisibility(View.GONE);
@@ -162,6 +184,17 @@ public class ConfigurationAdapter extends BaseAdapter
                 txtDescription.setVisibility(View.VISIBLE);
                 txtDescription.setText(selected.getString(context));
                 txtDescription.setEnabled(item.isAvailable(configuration));
+                vPalette.setVisibility(View.GONE);
+            } else if (item.getType().equals(Configuration.Type.Palette)) {
+                final Palette selected = item.getPalette(configuration);
+                btnBinary.setVisibility(View.GONE);
+                txtTitle.setVisibility(View.VISIBLE);
+                txtTitle.setText(item.getString(context));
+                txtTitle.setEnabled(item.isAvailable(configuration));
+                txtDescription.setVisibility(View.GONE);
+                vPalette.setVisibility(View.VISIBLE);
+                vPalette.setEnabled(item.isAvailable(configuration));
+                vPalette.setPalette(selected);
             }
         }
 

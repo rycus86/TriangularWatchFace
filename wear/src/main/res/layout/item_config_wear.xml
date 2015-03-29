@@ -30,4 +30,22 @@
         android:visibility="gone"
         android:layout_below="@id/txt_config_title"/>
 
+    <hu.rycus.watchface.triangular.commons.PaletteView
+        android:id="@+id/v_config_palette"
+        android:layout_width="60dp"
+        android:layout_height="20dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="10dp"/>
+
+    <TextView
+        android:id="@+id/txt_config_single_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/v_config_palette"
+        android:paddingStart="10dp"
+        android:paddingEnd="2dp"/>
+
 </RelativeLayout>

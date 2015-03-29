@@ -14,6 +14,8 @@ import com.google.android.gms.wearable.DataMap;
 import hu.rycus.watchface.commons.config.ConfigurationHelper;
 import hu.rycus.watchface.triangular.R;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
+import hu.rycus.watchface.triangular.commons.PaletteView;
 
 public class ConfigurationAdapter extends WearableListView.Adapter
         implements
@@ -22,6 +24,7 @@ public class ConfigurationAdapter extends WearableListView.Adapter
 
     private final Context context;
     private final OnGroupSelectedListener onGroupSelectedListener;
+    private final OnPaletteParentSelectedListener onPaletteParentSelectedListener;
     private final LayoutInflater inflater;
     private final GoogleApiClient apiClient;
 
@@ -30,16 +33,19 @@ public class ConfigurationAdapter extends WearableListView.Adapter
 
     public ConfigurationAdapter(final Context context,
                                 final OnGroupSelectedListener onGroupSelectedListener,
+                                final OnPaletteParentSelectedListener onPaletteParentSelectedListener,
                                 final GoogleApiClient apiClient) {
         this.context = context;
         this.onGroupSelectedListener = onGroupSelectedListener;
+        this.onPaletteParentSelectedListener = onPaletteParentSelectedListener;
         this.inflater = LayoutInflater.from(context);
         this.apiClient = apiClient;
     }
 
     @Override
     public WearableListView.ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
-        return new ConfigurationViewHolder(inflater.inflate(R.layout.item_config_wear, null));
+        final View itemView = inflater.inflate(R.layout.item_config_wear, null);
+        return new ConfigurationViewHolder(itemView);
     }
 
     @Override
@@ -79,6 +85,19 @@ public class ConfigurationAdapter extends WearableListView.Adapter
         }
     }
 
+    public void onPaletteSelectionResult(final Configuration item, final Palette selection) {
+        if (apiClient.isConnected() && configuration != null) {
+            configuration.putString(item.getKey(), selection.name());
+            ConfigurationHelper.storeConfiguration(
+                    apiClient, Configuration.PATH, configuration);
+            notifyDataSetChanged();
+        } else {
+            final DataMap pending = new DataMap();
+            pending.putString(item.getKey(), selection.name());
+            pendingConfiguration = pending;
+        }
+    }
+
     @Override
     public void onClick(final WearableListView.ViewHolder viewHolder) {
         final int position = (Integer) viewHolder.itemView.getTag();
@@ -90,6 +109,9 @@ public class ConfigurationAdapter extends WearableListView.Adapter
         if (item.getType().equals(Configuration.Type.Group)) {
             final Configuration current = item.getGroupSelection(configuration);
             onGroupSelectedListener.onGroupSelected(item, current);
+        } else if (item.getType().equals(Configuration.Type.Palette)) {
+            final Palette current = item.getPalette(configuration);
+            onPaletteParentSelectedListener.onPaletteParentSelected(item, current);
         }
     }
 
@@ -101,6 +123,8 @@ public class ConfigurationAdapter extends WearableListView.Adapter
         private final CompoundButton btnBinary;
         private final TextView txtTitle;
         private final TextView txtDescription;
+        private final TextView txtSingleTitle;
+        private final PaletteView vPalette;
 
         private boolean listenForEvents = true;
 
@@ -110,6 +134,8 @@ public class ConfigurationAdapter extends WearableListView.Adapter
             btnBinary.setOnCheckedChangeListener(createButtonListener());
             txtTitle = find(itemView, R.id.txt_config_title);
             txtDescription = find(itemView, R.id.txt_config_description);
+            txtSingleTitle = find(itemView, R.id.txt_config_single_title);
+            vPalette = find(itemView, R.id.v_config_palette);
         }
 
         @SuppressWarnings("unchecked")
@@ -134,6 +160,8 @@ public class ConfigurationAdapter extends WearableListView.Adapter
                 btnBinary.setEnabled(item.isAvailable(configuration));
                 txtTitle.setVisibility(View.GONE);
                 txtDescription.setVisibility(View.GONE);
+                txtSingleTitle.setVisibility(View.GONE);
+                vPalette.setVisibility(View.GONE);
             } else if (Configuration.Type.Group.equals(item.getType())) {
                 final boolean enabled = item.isAvailable(configuration);
                 final Configuration selected = item.getGroupSelection(configuration);
@@ -144,6 +172,18 @@ public class ConfigurationAdapter extends WearableListView.Adapter
                 txtDescription.setVisibility(View.VISIBLE);
                 txtDescription.setText(selected.getString(context));
                 txtDescription.setEnabled(enabled);
+                txtSingleTitle.setVisibility(View.GONE);
+                vPalette.setVisibility(View.GONE);
+            } else if (Configuration.Type.Palette.equals(item.getType())) {
+                final Palette selected = item.getPalette(configuration);
+                btnBinary.setVisibility(View.GONE);
+                txtTitle.setVisibility(View.GONE);
+                txtDescription.setVisibility(View.GONE);
+                txtSingleTitle.setVisibility(View.VISIBLE);
+                txtSingleTitle.setText(item.getString(context));
+                txtSingleTitle.setEnabled(item.isAvailable(configuration));
+                vPalette.setVisibility(View.VISIBLE);
+                vPalette.setPalette(selected);
             }
         }
 
@@ -168,6 +208,12 @@ public class ConfigurationAdapter extends WearableListView.Adapter
     public interface OnGroupSelectedListener {
 
         public void onGroupSelected(Configuration group, Configuration current);
+
+    }
+
+    public interface OnPaletteParentSelectedListener {
+
+        public void onPaletteParentSelected(Configuration item, Palette current);
 
     }
 

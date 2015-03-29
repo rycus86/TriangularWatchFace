@@ -14,6 +14,7 @@ import java.util.Random;
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.NonAmbientBackground;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class AnimatedBackground extends NonAmbientBackground {
@@ -21,7 +22,8 @@ public class AnimatedBackground extends NonAmbientBackground {
     private static final int N_HORIZONTAL = 6;
     private static final int N_VERTICAL = 6;
 
-    private final int[] colors = { 0xFF388E3C, 0xFFC2185B, 0xFF757575 };
+    private Palette palette = Palette.getDefault();
+
     private final int[] opacity = new int[N_HORIZONTAL * N_VERTICAL + N_HORIZONTAL / 2];
     private final Random random = new Random();
     private final Path path = new Path();
@@ -78,6 +80,7 @@ public class AnimatedBackground extends NonAmbientBackground {
     protected void onApplyConfiguration(final DataMap configuration) {
         setActive(Configuration.ANIMATED_BACKGROUND.getBoolean(configuration));
 
+        palette = Configuration.COLOR_PALETTE.getPalette(configuration);
         pulse = Configuration.PULSE_ODD_TRIANGLE.getBoolean(configuration);
         manageScheduling();
     }
@@ -93,9 +96,9 @@ public class AnimatedBackground extends NonAmbientBackground {
 
     @Override
     protected void onDrawBackground(final Canvas canvas, final Time time) {
-        paint.setColor(0xFF121212);
+        paint.setColor(palette.background());
 
-        canvas.drawRect(0, 0, canvasWidth, canvasHeight, paint);
+        canvas.drawPaint(paint);
 
         path.reset();
         path.rLineTo(w, 0);
@@ -119,7 +122,7 @@ public class AnimatedBackground extends NonAmbientBackground {
                     // will add an odd color later
                     colorIndex++;
                 } else {
-                    final int color = colors[colorIndex++ % 3];
+                    final int color = palette.triangle(colorIndex++);
 
                     paint.setColor(color);
                     paint.setAlpha(opacity[xi + yi * N_HORIZONTAL]);
@@ -138,7 +141,7 @@ public class AnimatedBackground extends NonAmbientBackground {
         }
 
         // add an odd color
-        paint.setColor(0xFFFF5722);
+        paint.setColor(palette.odd());
         paint.setAlpha(oddAlpha);
         canvas.drawPath(oddPathTransformed, paint);
     }

@@ -11,6 +11,7 @@ import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.Component;
 import hu.rycus.watchface.triangular.commons.Configuration;
+import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Hour extends Component {
@@ -20,9 +21,16 @@ public class Hour extends Component {
 
     private boolean display24hours = true;
 
+    private Palette palette = Palette.getDefault();
+
+    @Override
+    protected void onCreate(final boolean visible, final boolean inAmbientMode) {
+        super.onCreate(visible, inAmbientMode);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
+    }
+
     @Override
     protected void onSetupPaint(final Paint paint) {
-        paint.setColor(Color.WHITE);
         paint.setAntiAlias(true);
         paint.setTextSize(100);
         paint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -40,9 +48,19 @@ public class Hour extends Component {
     }
 
     @Override
+    protected void onAmbientModeChanged(final boolean inAmbientMode) {
+        super.onAmbientModeChanged(inAmbientMode);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
+    }
+
+    @Override
     protected void onApplyConfiguration(final DataMap configuration) {
         super.onApplyConfiguration(configuration);
+
         display24hours = Configuration.SHOW_24_HOURS.getBoolean(configuration);
+
+        palette = Configuration.COLOR_PALETTE.getPalette(configuration);
+        paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
     }
 
     @Override

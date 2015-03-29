@@ -10,6 +10,7 @@
     <string name="config_dir_seconds_right">Left to right</string>
     <string name="config_dir_seconds_left">Right to left</string>
     <string name="config_dir_seconds_all">Every direction</string>
+    <string name="config_color_palette">Color palette</string>
     <string name="config_animated_background">Animated background</string>
     <string name="config_pulse">Pulse every second</string>
 
