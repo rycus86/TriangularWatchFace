@@ -1,1 +1,1 @@
-include ':mobile', ':wear', ':commons', ':triangular-commons'
+include ':mobile', ':wear', ':triangular-commons'

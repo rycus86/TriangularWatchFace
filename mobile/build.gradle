@@ -8,8 +8,8 @@ android {
         applicationId "hu.rycus.watchface.triangular"
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 6
-        versionName "1.5"
+        versionCode 7
+        versionName "1.6"
     }
     buildTypes {
         release {
@@ -23,5 +23,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     wearApp project(':wear')
     compile project(':triangular-commons')
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.0.0'
 }
