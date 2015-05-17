@@ -9,8 +9,8 @@ android {
         applicationId "hu.rycus.watchface.triangular"
         minSdkVersion 21
         targetSdkVersion 21
-        versionCode 8
-        versionName "1.7"
+        versionCode 9
+        versionName "1.7.1"
     }
     buildTypes {
         release {
