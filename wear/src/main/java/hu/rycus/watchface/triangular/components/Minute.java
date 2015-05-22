@@ -10,6 +10,8 @@ import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.Animation;
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.commons.DateTimeUI;
+import hu.rycus.watchface.commons.TimeField;
 import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
@@ -19,6 +21,11 @@ public class Minute extends Component {
     private static final int MIN_SIZE = 64;
     private static final int MAX_SIZE = 90;
     private static final int SIZE_DIFFERENCE = MAX_SIZE - MIN_SIZE;
+
+    private final DateTimeUI ui = new DateTimeUI.Builder()
+            .field(TimeField.MINUTE)
+            .format("%M")
+            .build();
 
     private float textLeft;
     private float textBottom;
@@ -71,7 +78,8 @@ public class Minute extends Component {
 
     @Override
     protected void onDraw(final Canvas canvas, final Time time) {
-        canvas.drawText(time.format("%M"), textLeft, textBottom, paint);
+        ui.update(time, paint);
+        canvas.drawText(ui.text(), textLeft, textBottom, paint);
     }
 
     private Animation createGrowAnimation() {

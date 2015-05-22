@@ -89,7 +89,7 @@ public class AnimatedBackground extends NonAmbientBackground {
     protected void onHandleMessage(final int what) {
         if (Constants.HandlerMessage.PER_SECOND == what) {
             if (active && visible && !inAmbientMode && pulse && !hasAnimation()) {
-                setAnimation(createPulseAnimation());
+                setAnimation(new PulseAnimation());
             }
         }
     }
@@ -165,42 +165,9 @@ public class AnimatedBackground extends NonAmbientBackground {
                 startDelays[idx] = random.nextFloat() * 0.5f;
             }
 
-            setAnimation(createFadeInAnimation(startDelays));
+            setAnimation(new FadeInAnimation(startDelays));
             manageScheduling();
         }
-    }
-
-    private Animation createFadeInAnimation(final float[] startDelays) {
-        final int count = startDelays.length;
-        return new Animation(Constants.LONG_ANIMATION_DURATION) {
-            @Override
-            protected void apply(final float progress) {
-                updateOddTriangleScaleForAnimationProgress(progress);
-                oddAlpha = (int) (0xFF * progress * progress);
-
-                for (int idx = 0; idx < count; idx++) {
-                    float alpha = Math.min(Math.max(progress - startDelays[idx], 0f), 0.5f) * 2f;
-                    opacity[idx] = (int) (0xFF * alpha);
-                }
-            }
-            @Override
-            protected void onFinished() {
-                resetState();
-            }
-        };
-    }
-
-    private Animation createPulseAnimation() {
-        return new Animation(Constants.ANIMATION_DURATION) {
-            @Override
-            protected void apply(final float progress) {
-                if (progress < 0.5f) {
-                    updateOddTriangleScaleForAnimationProgress(1f - (progress * 2f));
-                } else {
-                    updateOddTriangleScaleForAnimationProgress((progress - 0.5f) * 2f);
-                }
-            }
-        };
     }
 
     private void updateOddTriangleScaleForAnimationProgress(final float progress) {
@@ -221,6 +188,65 @@ public class AnimatedBackground extends NonAmbientBackground {
         } else {
             cancel(Constants.HandlerMessage.PER_SECOND);
         }
+    }
+
+    private class FadeInAnimation extends Animation {
+
+        private final float[] startDelays;
+        private final int count;
+
+        private FadeInAnimation(final float[] startDelays) {
+            super(Constants.LONG_ANIMATION_DURATION);
+            this.startDelays = startDelays;
+            this.count = startDelays.length;
+        }
+
+        @Override
+        protected void apply(final float progress) {
+            updateOddTriangleScaleForAnimationProgress(progress);
+            oddAlpha = (int) (0xFF * progress * progress);
+
+            for (int idx = 0; idx < count; idx++) {
+                final float translatedProgress;
+                if (progress > startDelays[idx]) {
+                    translatedProgress = progress - startDelays[idx];
+                } else {
+                    translatedProgress = 0f;
+                }
+
+                final float alpha;
+                if (translatedProgress < 0.5f) {
+                    alpha = translatedProgress * 2f;
+                } else {
+                    alpha = 1f;
+                }
+
+                opacity[idx] = (int) (0xFF * alpha);
+            }
+        }
+
+        @Override
+        protected void onFinished() {
+            resetState();
+        }
+
+    }
+
+    private class PulseAnimation extends Animation {
+
+        public PulseAnimation() {
+            super(Constants.ANIMATION_DURATION);
+        }
+
+        @Override
+        protected void apply(final float progress) {
+            if (progress < 0.5f) {
+                updateOddTriangleScaleForAnimationProgress(1f - (progress * 2f));
+            } else {
+                updateOddTriangleScaleForAnimationProgress((progress - 0.5f) * 2f);
+            }
+        }
+
     }
 
 }

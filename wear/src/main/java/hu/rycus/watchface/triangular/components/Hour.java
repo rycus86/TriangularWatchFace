@@ -10,16 +10,21 @@ import android.text.format.Time;
 import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.commons.DateTimeUI;
+import hu.rycus.watchface.commons.TimeField;
 import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
 
 public class Hour extends Component {
 
+    private final DateTimeUI ui = new DateTimeUI.Builder()
+            .field(TimeField.HOUR)
+            .format("%H")
+            .build();
+
     private float textLeft;
     private float textBottom;
-
-    private boolean display24hours = true;
 
     private Palette palette = Palette.getDefault();
 
@@ -57,7 +62,8 @@ public class Hour extends Component {
     protected void onApplyConfiguration(final DataMap configuration) {
         super.onApplyConfiguration(configuration);
 
-        display24hours = Configuration.SHOW_24_HOURS.getBoolean(configuration);
+        final boolean display24hours = Configuration.SHOW_24_HOURS.getBoolean(configuration);
+        ui.changeFormat(display24hours ? "%H" : "%I");
 
         palette = Configuration.COLOR_PALETTE.getPalette(configuration);
         paint.setColor(inAmbientMode ? Color.WHITE : palette.text());
@@ -65,14 +71,8 @@ public class Hour extends Component {
 
     @Override
     protected void onDraw(final Canvas canvas, final Time time) {
-        final String formatted;
-        if (display24hours) {
-            formatted = time.format("%H");
-        } else {
-            formatted = time.format("%I");
-        }
-
-        canvas.drawText(formatted, textLeft, textBottom, paint);
+        ui.update(time, paint);
+        canvas.drawText(ui.text(), textLeft, textBottom, paint);
     }
 
 }

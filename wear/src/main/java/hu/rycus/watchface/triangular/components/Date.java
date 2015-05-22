@@ -3,13 +3,14 @@ package hu.rycus.watchface.triangular.components;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.format.Time;
 
 import com.google.android.gms.wearable.DataMap;
 
 import hu.rycus.watchface.commons.Component;
+import hu.rycus.watchface.commons.DateTimeUI;
+import hu.rycus.watchface.commons.TimeField;
 import hu.rycus.watchface.triangular.commons.Configuration;
 import hu.rycus.watchface.triangular.commons.Palette;
 import hu.rycus.watchface.triangular.util.Constants;
@@ -18,7 +19,20 @@ public class Date extends Component {
 
     private static final int TEXT_HEIGHT = 20;
 
-    private final Rect dowBounds = new Rect();
+    private final DateTimeUI dow = new DateTimeUI.Builder()
+            .field(TimeField.DATE)
+            .format("%a")
+            .build();
+
+    private final DateTimeUI date = new DateTimeUI.Builder()
+            .field(TimeField.DATE)
+            .format("%d")
+            .build();
+
+    private final DateTimeUI month = new DateTimeUI.Builder()
+            .field(TimeField.DATE)
+            .format("%B")
+            .build();
 
     private Palette palette = Palette.getDefault();
 
@@ -63,15 +77,17 @@ public class Date extends Component {
 
     @Override
     protected void onDraw(final Canvas canvas, final Time time) {
-        final String dowText = time.format("%a");
-        paint.getTextBounds(dowText, 0, dowText.length(), dowBounds);
+        paint.setTypeface(Typeface.DEFAULT);
+        dow.update(time, paint);
 
         paint.setTypeface(Typeface.DEFAULT_BOLD);
-        canvas.drawText(time.format("%d"), textLeft + dowBounds.width() + 4f, dateBottom, paint);
+        date.update(time, paint);
+        canvas.drawText(date.text(), textLeft + dow.width() + 4f, dateBottom, paint);
 
         paint.setTypeface(Typeface.DEFAULT);
-        canvas.drawText(dowText, textLeft, dateBottom, paint);
-        canvas.drawText(time.format("%B"), textLeft, monthBottom, paint);
+        month.update(time, paint);
+        canvas.drawText(dow.text(), textLeft, dateBottom, paint);
+        canvas.drawText(month.text(), textLeft, monthBottom, paint);
     }
 
 }

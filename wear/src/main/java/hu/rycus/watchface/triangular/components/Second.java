@@ -29,6 +29,7 @@ public class Second extends Component {
 
     private String previous;
     private String current;
+    private int currentValue;
 
     private final PointF previousOffset = new PointF(0, 0);
     private final PointF currentOffset = new PointF(0, 0);
@@ -148,6 +149,7 @@ public class Second extends Component {
     private void reset() {
         previous = current != null ? current : "00";
         current = "00";
+        currentValue = 0;
         previousAlpha = 0;
         currentAlpha = 0;
     }
@@ -155,11 +157,11 @@ public class Second extends Component {
     private void updateTime() {
         ownTime.setToNow();
 
-        final String last = current;
-        current = ownTime.format("%S");
+        if (ownTime.second != currentValue) {
+            currentValue = ownTime.second;
 
-        if (!current.equals(last)) {
-            previous = last;
+            previous = current;
+            current = ownTime.format("%S");
         }
     }
 
