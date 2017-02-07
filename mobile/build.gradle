@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "20.0.0"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         applicationId "hu.rycus.watchface.triangular"
         minSdkVersion 18
-        targetSdkVersion 22
-        versionCode 10
-        versionName "1.8"
+        targetSdkVersion 25
+        versionCode 11
+        versionName "1.9.18011"
     }
     buildTypes {
         release {
@@ -21,7 +21,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    wearApp project(':wear')
+    wearApp project(path: ':wear', configuration: 'wear1Release')
     compile project(':triangular-commons')
-    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.0'
 }
